@@ -110,4 +110,60 @@ class Preprocessor
       end
     end
   end
+
+  def hammer
+    # wget http://spades.bioinf.spbau.ru/release3.0.0/SPAdes-3.0.0-Linux.tar.gz
+    # tar -xzf SPAdes-3.0.0-Linux.tar.gz
+    # cd SPAdes-3.0.0-Linux/bin/
+    # --only-error-correction runs only read error correction (no assembly)
+    # --disable-gzip-output forces error correction not to compress the 
+    #                       corrected reads
+    if @paired==2
+      left=[]
+      right=[]
+      single=[]
+      @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
+        # build a yaml file
+        # run spades.py on all files
+        left << a[:current]
+        right << b[:current]
+        single << a[:unpaired] if a[:unpaired]
+        single << b[:unpaired] if b[:unpaired]
+      end
+      yaml = "[\n  {\n"
+      yaml << "    orientation: \"fr\",\n"
+      yaml << "    type: \"paired-end\",\n"
+      yaml << "    left reads: [\n"
+      left.each_with_index do |left_read, j|
+        yaml << "      \"#{left_read}\""
+        yaml << "," if j < left.length-1
+        yaml << "\n"
+      end
+      yaml << "    ],\n"
+      yaml << "    right reads: [\n"
+      right.each_with_index do |right_read, j|
+        yaml << "      \"#{right_read}\""
+        yaml << "," if j < right.length-1
+        yaml << "\n"
+      end
+      yaml << "    ],\n"
+      yaml << "  },\n"
+      yaml << "  {\n"
+      yaml << "    type: \"single\",\n"
+      yaml << "    single reads: [\n"
+      single.each_with_index do |single_read, j|
+        yaml << "      \"#{single_read}\""
+        yaml << "," if j < single.length-1
+        yaml << "\n"
+      end
+      yaml << "    ]\n  }\n]\n"
+    end
+    puts yaml
+    File.open("dataset.yaml","w") {|io| io.write yaml}
+    cmd = "python #{@hammer_path} --dataset dataset.yaml --only-error-correction"
+    cmd << " --disable-gzip-output -m #{@memory} -t #{@threads}"
+    cmd << " -o #{output_dir}/hammer"
+    puts cmd
+    # loads output file location into @data[:current]
+  end
 end
