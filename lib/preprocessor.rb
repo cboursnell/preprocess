@@ -12,10 +12,9 @@
 ## # # # # # # # # # # # # #
 
 require 'rubygems'
+require 'preprocessor'
 
 class Preprocessor
-
-  attr_accessor
 
   def initialize(input, verbose)
     @input = input

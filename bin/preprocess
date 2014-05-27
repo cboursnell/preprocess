@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 ## # # # # # # # # # # # # #
 ## mrna pipeline
@@ -11,8 +11,9 @@
 ##
 ## # # # # # # # # # # # # #
 
-require 'rubygems'
+#require 'rubygems'
 require 'trollop'
+require 'preprocessor'
 
 opts = Trollop::options do
   version "v0.1"
