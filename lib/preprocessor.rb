@@ -13,6 +13,7 @@
 
 require 'rubygems'
 require 'preprocessor'
+require 'set'
 
 class MalformedInputError < StandardError
 end
@@ -24,6 +25,10 @@ class Preprocessor
     @verbose = verbose
     @output_dir = File.expand_path(output)
     @trim_jar = "bin/trimmomatic-0.32.jar"
+    @khmer = "normalize-by-median.py"
+    @hammer_path = "/home/chris/documents/apps/SPAdes-3.0.0-Linux/bin/spades.py"
+    @memory = 1 # TODO set this value
+    @threads = 1 # TODO set this value
     @data = []
     if File.exist?(input)
       File.open("#{input}").each_line do |line|
@@ -38,7 +43,8 @@ class Preprocessor
         @data << { :file => File.expand_path(cols[0]),
                    :rep => cols[1].to_i,
                    :type => cols[2],
-                   :pair => cols[3].to_i }
+                   :pair => cols[3].to_i,
+                   :current => File.expand_path(cols[0]) }
       end
     else
       raise RuntimeError, "#{input} does not exist"
@@ -81,10 +87,6 @@ class Preprocessor
       end
     elsif @paired==2
       @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
-        puts "a = #{a}"
-        puts "b = #{b}"
-        puts "i = #{i}"
-        puts "j = #{j}"
         outfile_left = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{a[:pair]}.t.fq"
         outfile_right = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{b[:pair]}.t.fq"
         outfileU_left = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{a[:pair]}.tU.fq"
@@ -97,8 +99,8 @@ class Preprocessor
         trim_cmd << "#{outfile_right} #{outfileU_right} "
         trim_cmd << " LEADING:#{leading} TRAILING:#{trailing} "
         trim_cmd << " SLIDINGWINDOW:#{windowsize}:#{quality} MINLEN:#{minlen}"
-        @data[i][:trimmed] = outfile_left
-        @data[j][:trimmed] = outfile_right
+        @data[i][:current] = outfile_left
+        @data[j][:current] = outfile_right
         @data[i][:unpaired] = outfileU_left
         @data[j][:unpaired] = outfileU_right
         if !File.exist?("#{outfile_left}")
@@ -165,5 +167,38 @@ class Preprocessor
     cmd << " -o #{output_dir}/hammer"
     puts cmd
     # loads output file location into @data[:current]
+  end
+
+  def khmer(kmer=23, cutoff=20, buckets=4, memory=8)
+    x = (memory/buckets*1e9).to_i
+    # interleave the input files if paired
+    if @paired==2
+      @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
+        input_left = a[:current]
+        input_right = b[:current]
+        if input_left and input_right
+          outfile = "#{@output_dir}/#{File.basename(a[:current],"fq")}in.fq"
+          cmd = "paste #{input_left} #{input_right} | paste - - - - | "
+          cmd << "awk -v FS=\"\\t\" -v OFS=\"\\n\" \'{print(\"@read\"NR\":1\",$3,"
+          cmd << "$5,$7,\"@read\"NR\":2\",$4,$6,$8)}\' > "
+          cmd << " #{outfile}"
+          puts cmd
+          @data[i][:current] = outfile
+          @data[j][:current] = outfile
+          # run interleave cmd
+        end
+      end
+      pair = " -p "
+    end
+    # khmer
+    set = Set.new
+    @data.each_with_index do |a, i|
+      set << a[:current]
+    end
+    file_list = set.to_a.join(" ")
+    outfile = "#{@output_dir}/khmered.fq"
+    cmd = "#{@khmer} #{pair} -k #{kmer} -C #{cutoff} -f -o #{outfile} "
+    cmd << "#{file_list}"
+    puts cmd
   end
 end
