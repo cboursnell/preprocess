@@ -70,5 +70,43 @@ class Preprocessor
     end
     return phred
   end
+
+  def trim(minlen=40, windowsize=4, quality=15, trailing=15,
+            leading=15, mismatches=2)
+    if @paired==1
+      @data.each_with_index do |a, i|
+        puts "a = #{a}"
+        puts "i = #{i}"
+      end
+    elsif @paired==2
+      @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
+        puts "a = #{a}"
+        puts "b = #{b}"
+        puts "i = #{i}"
+        puts "j = #{j}"
+        outfile_left = "#{a[:cell]}_#{a[:rep]}-#{a[:pair]}.t.fq"
+        outfile_right = "#{a[:cell]}_#{a[:rep]}-#{b[:pair]}.t.fq"
+        outfileU_left = "#{a[:cell]}_#{a[:rep]}-#{a[:pair]}.tU.fq"
+        outfileU_right = "#{a[:cell]}_#{a[:rep]}-#{b[:pair]}.tU.fq"
+        trim_cmd = "java -jar #{@trim_jar} PE "
+        trim_cmd << " -phred#{self.detect_phred} "
+        trim_cmd << " -threads 1 "
+        trim_cmd << " #{a[:file]} #{b[:file]} "
+        trim_cmd << " #{outfile_left} #{outfileU_left} "
+        trim_cmd << "#{outfile_right} #{outfileU_right} "
+        trim_cmd << " LEADING:#{leading} TRAILING:#{trailing} "
+        trim_cmd << " SLIDINGWINDOW:#{windowsize}:#{quality} MINLEN:#{minlen}"
+        @data[i][:trimmed] = outfile_left
+        @data[j][:trimmed] = outfile_right
+        @data[i][:unpaired] = outfileU_left
+        @data[j][:unpaired] = outfileU_right
+        if !File.exist?("#{outfile_left}")
+          puts trim_cmd if @verbose
+          # run trim_cmd
+        else
+          puts "trimmomatic already run on #{a[:file]}" if @verbose
+        end
+      end
+    end
   end
 end
