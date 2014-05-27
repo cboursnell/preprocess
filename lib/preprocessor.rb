@@ -44,5 +44,31 @@ class Preprocessor
     end
     @paired = @data.reduce(0) {|max,v| max=[max,v[:pair]].max}
   end
+
+  def detect_phred
+    file = File.open(@data[0][:file])
+    c = 0
+    scores={}
+    while c < 400
+      line = file.readline
+      if c % 4 == 3
+        line.chars.each do |i|
+          ascii_key = i.ord
+          scores[ascii_key] ||= 0
+          scores[ascii_key] += 1
+        end
+      end
+      c += 1
+    end
+    max = scores.keys.max
+    min = scores.keys.min
+    phred = -1
+    if max == 74 or max == 73
+      phred = 33
+    elsif max == 104 or max == 103
+      phred = 64
+    end
+    return phred
+  end
   end
 end
