@@ -22,6 +22,7 @@ class Preprocessor
   def initialize(input, output, verbose)
     @input = input
     @verbose = verbose
+    @output_dir = File.expand_path(output)
     @trim_jar = "bin/trimmomatic-0.32.jar"
     @data = []
     if File.exist?(input)
@@ -34,7 +35,7 @@ class Preprocessor
         if cols[3].to_i != 1 and cols[3].to_i != 2
           raise RuntimeError.new("Pair should be 1 or 2") 
         end
-        @data << { :file => cols[0],
+        @data << { :file => File.expand_path(cols[0]),
                    :rep => cols[1].to_i,
                    :type => cols[2],
                    :pair => cols[3].to_i }
@@ -84,10 +85,10 @@ class Preprocessor
         puts "b = #{b}"
         puts "i = #{i}"
         puts "j = #{j}"
-        outfile_left = "#{a[:cell]}_#{a[:rep]}-#{a[:pair]}.t.fq"
-        outfile_right = "#{a[:cell]}_#{a[:rep]}-#{b[:pair]}.t.fq"
-        outfileU_left = "#{a[:cell]}_#{a[:rep]}-#{a[:pair]}.tU.fq"
-        outfileU_right = "#{a[:cell]}_#{a[:rep]}-#{b[:pair]}.tU.fq"
+        outfile_left = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{a[:pair]}.t.fq"
+        outfile_right = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{b[:pair]}.t.fq"
+        outfileU_left = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{a[:pair]}.tU.fq"
+        outfileU_right = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{b[:pair]}.tU.fq"
         trim_cmd = "java -jar #{@trim_jar} PE "
         trim_cmd << " -phred#{self.detect_phred} "
         trim_cmd << " -threads 1 "
