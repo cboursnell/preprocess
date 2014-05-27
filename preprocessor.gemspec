@@ -6,8 +6,8 @@ Gem::Specification.new do |gem|
   gem.description = "See summary"
   gem.authors     = ["Chris Boursnell", "Richard Smith-Unna"]
   gem.email       = 'cmb211@cam.ac.uk'
-  gem.files       = ["lib/preprocessor.rb", "bin/preprocessor"]
-  gem.executables = ["preprocessor"]
+  gem.files       = ["lib/preprocessor.rb", "bin/preprocess"]
+  gem.executables = ["preprocess"]
   gem.require_paths = %w( lib )
   gem.homepage    = 'http://rubygems.org/gems/preprocessor'
   gem.license     = 'MIT'
