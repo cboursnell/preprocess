@@ -71,13 +71,13 @@ class Preprocessor
     end
     max = scores.keys.max
     min = scores.keys.min
-    phred = -1
+    @phred = -1
     if max == 74 or max == 73
-      phred = 33
+      @phred = 33
     elsif max == 104 or max == 103
-      phred = 64
+      @phred = 64
     end
-    return phred
+    return @phred
   end
 
   def trim(minlen=40, windowsize=4, quality=15, trailing=15,
