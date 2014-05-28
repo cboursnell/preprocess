@@ -20,6 +20,8 @@ end
 
 class Preprocessor
 
+  attr_accessor :input, :output, :phred
+
   def initialize(input, output, verbose)
     @input = input
     @verbose = verbose
