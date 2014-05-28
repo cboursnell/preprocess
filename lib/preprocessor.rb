@@ -157,7 +157,7 @@ class Preprocessor
       end
       yaml << "    ]\n  }\n]\n"
     end
-    puts yaml
+    # puts yaml
     File.open("#{@output_dir}/dataset.yaml","w") {|io| io.write yaml}
     cmd = "python #{@hammer_path} --dataset #{@output_dir}/dataset.yaml "
     cmd << " --only-error-correction "
