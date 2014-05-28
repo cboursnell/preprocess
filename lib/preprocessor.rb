@@ -223,20 +223,26 @@ class Preprocessor
     # loads output file location into @data[:current]
   end
 
-  def khmer(kmer=23, cutoff=20, buckets=4, memory=8)
-    x = (memory/buckets*1e9).to_i
+  def khmer(kmer=23, cutoff=20, buckets=4)
+    x = (@memory/buckets*1e9).to_i
     # interleave the input files if paired
     if @paired==2
       @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
         input_left = a[:current]
         input_right = b[:current]
         if input_left and input_right
-          outfile = "#{@output_dir}/#{File.basename(a[:current],"fq")}in.fq"
+          outfile = "#{@output_dir}/"
+          outfile << "#{a[:type]}_#{a[:rep]}-#{a[:pair]}"
+          outfile << ".in.fq"
+          
           cmd = "paste #{input_left} #{input_right} | paste - - - - | "
-          cmd << "awk -v FS=\"\\t\" -v OFS=\"\\n\" \'{print(\"@read\"NR\":1\",$3,"
-          cmd << "$5,$7,\"@read\"NR\":2\",$4,$6,$8)}\' > "
+          cmd << "awk -v FS=\"\\t\" -v OFS=\"\\n\" \'{print(\"@read\"NR\":1\","
+          cmd << "$3,$5,$7,\"@read\"NR\":2\",$4,$6,$8)}\' > "
           cmd << " #{outfile}"
           puts cmd
+          if !File.exist?(outfile)
+            `#{cmd}`
+          end
           @data[i][:current] = outfile
           @data[j][:current] = outfile
           # run interleave cmd
