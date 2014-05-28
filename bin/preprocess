@@ -28,12 +28,18 @@ opts = Trollop::options do
   opt :output, "Directory where output files go",
       :required => true,
       :type => String
+  opt :threads, "Number of threads to use",
+      :default => 1,
+      :type => :int
+  opt :memory, "Memory to use in GB",
+      :default => 4,
+      :type => :int
   opt :no_trim, "Don't trim the input files"
+  opt :no_hammer, "There is no time for hammertime"
+  opt :no_khmer, "Don't run digital normalisation"
   opt :minlen, "The minimum length for trimmed sequences",
       :default => 40,
       :type => :int
-  opt :no_hammer, "There is no time for hammertime"
-  opt :no_khmer, "Don't run digital normalisation"
   opt :kmer, "The kmer size to use for khmer",
       :default => 23,
       :type => :int
@@ -49,7 +55,8 @@ end
 Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
 Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
 
-preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose)
+preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose, 
+  opts.threads, opts.memory)
 
 preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2) if !opts.no_trim
 

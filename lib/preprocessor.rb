@@ -22,15 +22,15 @@ class Preprocessor
 
   attr_accessor :input, :output, :phred
 
-  def initialize(input, output, verbose)
+  def initialize(input, output, verbose, threads=1, memory=4)
     @input = input
     @verbose = verbose
     @output_dir = File.expand_path(output)
     @trim_jar = "bin/trimmomatic-0.32.jar"
     @khmer = "normalize-by-median.py"
     @hammer_path = "bin/SPAdes-3.0.0-Linux/bin/spades.py"
-    @memory = 4 # TODO set this value
-    @threads = 8 # TODO set this value
+    @memory = memory
+    @threads = threads
     @data = []
     if File.exist?(input)
       File.open("#{input}").each_line do |line|
