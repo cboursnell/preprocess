@@ -27,8 +27,8 @@ class Preprocessor
     @trim_jar = "bin/trimmomatic-0.32.jar"
     @khmer = "normalize-by-median.py"
     @hammer_path = "/home/chris/documents/apps/SPAdes-3.0.0-Linux/bin/spades.py"
-    @memory = 1 # TODO set this value
-    @threads = 1 # TODO set this value
+    @memory = 4 # TODO set this value
+    @threads = 8 # TODO set this value
     @data = []
     if File.exist?(input)
       File.open("#{input}").each_line do |line|
