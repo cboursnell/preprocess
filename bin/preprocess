@@ -31,7 +31,8 @@ opts = Trollop::options do
   opt :verbose, "Be verbose"
 end
 
-Trollop::die :input, "must exist" if !File.exist?(opts[:input]) if opts[:input]
+Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
+Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
 
 preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose)
 
