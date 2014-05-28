@@ -268,8 +268,24 @@ class Preprocessor
     end
     file_list = set.to_a.join(" ")
     outfile = "#{@output_dir}/khmered.fq"
-    cmd = "#{@khmer} #{pair} -k #{kmer} -C #{cutoff} -f -o #{outfile} "
+    outfile_single = "#{@output_dir}/#{@data[0][:type]}_khmered_single.fq"
+    cmd = "#{@khmer} #{pair} -q -k #{kmer} -C #{cutoff} -f -o #{outfile} "
     cmd << "#{file_list}"
-    puts cmd
+    if !File.exist?(outfile)
+      puts cmd
+      `#{cmd}`
+    end
+
+    cmd_single = "#{@khmer} -q -k #{kmer} -C #{cutoff} -f -o #{outfile_single}"
+    cmd_single << " #{single_output}"
+    if !File.exist?(outfile_single)
+      puts cmd_single
+      `#{cmd_single}`
+    end
+
+    #deinterleave paired reads
+    self.deinterleave(outfile, "#{@output_dir}/#{@data[0][:type]}.left.fq", 
+      "#{@output_dir}/#{@data[1][:type]}.right.fq")
+  end
   end
 end
