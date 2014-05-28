@@ -8,6 +8,7 @@ A Ruby gem for preprocessing mRNA reads from Illumina sequencing.
  - Ruby
  - Java
  - Khmer
+ - SPAdes
 
 # Installation of Khmer
 
@@ -23,3 +24,11 @@ Then
 pip install khmer
 ```
 
+# Installation of SPAdes
+
+Download the compiled binaries
+
+```
+wget http://spades.bioinf.spbau.ru/release3.0.0/SPAdes-3.0.0-Linux.tar.gz
+tar -xzf SPAdes-3.0.0-Linux.tar.gz
+```
