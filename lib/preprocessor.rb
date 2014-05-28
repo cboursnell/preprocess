@@ -287,5 +287,43 @@ class Preprocessor
     self.deinterleave(outfile, "#{@output_dir}/#{@data[0][:type]}.left.fq", 
       "#{@output_dir}/#{@data[1][:type]}.right.fq")
   end
+
+  def deinterleave(file, output_left, output_right)
+    puts "deinterleaving #{file} to make #{output_left} and #{output_right}"
+    fastq = File.open(file)
+    left = File.open("#{output_left}", "w")
+    right= File.open("#{output_right}", "w")
+
+    name1 = fastq.readline rescue nil
+    seq1 = fastq.readline rescue nil
+    plus1 = fastq.readline rescue nil
+    qual1 = fastq.readline rescue nil
+    name2 = fastq.readline rescue nil
+    seq2 = fastq.readline rescue nil
+    plus2 = fastq.readline rescue nil
+    qual2 = fastq.readline rescue nil
+
+    while name1 != nil and name2 != nil
+      left.write(name1)
+      left.write(seq1)
+      left.write(plus1)
+      left.write(qual1)
+      right.write(name2)
+      right.write(seq2)
+      right.write(plus2)
+      right.write(qual2)
+
+      name1 = fastq.readline rescue nil
+      seq1 = fastq.readline rescue nil
+      plus1 = fastq.readline rescue nil
+      qual1 = fastq.readline rescue nil
+      name2 = fastq.readline rescue nil
+      seq2 = fastq.readline rescue nil
+      plus2 = fastq.readline rescue nil
+      qual2 = fastq.readline rescue nil
+    end
+    fastq.close
+    left.close
+    right.close
   end
 end
