@@ -338,4 +338,14 @@ class Preprocessor
     left.close
     right.close
   end
+
+  def get_output
+    left_set = Set.new
+    right_set = Set.new
+    @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
+      left_set << @data[i][:current]
+      right_set << @data[j][:current]
+    end
+    [left_set.to_a, right_set.to_a]
+  end
 end
