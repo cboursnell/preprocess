@@ -155,10 +155,11 @@ class Preprocessor
       yaml << "    ]\n  }\n]\n"
     end
     puts yaml
-    File.open("dataset.yaml","w") {|io| io.write yaml}
-    cmd = "python #{@hammer_path} --dataset dataset.yaml --only-error-correction"
+    File.open("#{@output_dir}/dataset.yaml","w") {|io| io.write yaml}
+    cmd = "python #{@hammer_path} --dataset #{@output_dir}/dataset.yaml "
+    cmd << " --only-error-correction "
     cmd << " --disable-gzip-output -m #{@memory} -t #{@threads}"
-    cmd << " -o #{output_dir}/hammer"
+    cmd << " -o #{@output_dir}/hammer"
     puts cmd
     # loads output file location into @data[:current]
   end
