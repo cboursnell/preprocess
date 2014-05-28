@@ -106,8 +106,7 @@ class Preprocessor
         @data[i][:unpaired] = outfileU_left
         @data[j][:unpaired] = outfileU_right
         if !File.exist?("#{outfile_left}")
-          puts trim_cmd if @verbose
-          # run trim_cmd
+          # puts trim_cmd if @verbose
           `#{trim_cmd}`
         else
           puts "trimmomatic already run on #{a[:file]}" if @verbose
