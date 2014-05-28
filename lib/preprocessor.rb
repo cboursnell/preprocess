@@ -132,27 +132,21 @@ class Preprocessor
         single << a[:unpaired] if a[:unpaired]
         single << b[:unpaired] if b[:unpaired]
       end
-      yaml = "[\n  {\n"
-      yaml << "    orientation: \"fr\",\n"
-      yaml << "    type: \"paired-end\",\n"
+      yaml = "[\n  {\n    orientation: \"fr\",\n    type: \"paired-end\",\n"
       yaml << "    left reads: [\n"
       left.each_with_index do |left_read, j|
         yaml << "      \"#{left_read}\""
         yaml << "," if j < left.length-1
         yaml << "\n"
       end
-      yaml << "    ],\n"
-      yaml << "    right reads: [\n"
+      yaml << "    ],\n    right reads: [\n"
       right.each_with_index do |right_read, j|
         yaml << "      \"#{right_read}\""
         yaml << "," if j < right.length-1
         yaml << "\n"
       end
-      yaml << "    ],\n"
-      yaml << "  },\n"
-      yaml << "  {\n"
-      yaml << "    type: \"single\",\n"
-      yaml << "    single reads: [\n"
+      yaml << "    ],\n  },\n  {\n"
+      yaml << "    type: \"single\",\n    single reads: [\n"
       single.each_with_index do |single_read, j|
         yaml << "      \"#{single_read}\""
         yaml << "," if j < single.length-1
