@@ -27,12 +27,18 @@ For example:
 /home/chris/documents/rice/rice_M_2_2.fq,2,M,2
 ```
 
-# Running
+# Usage
 
 From the command line
 
 ```
-preprocess --input <input> --output <output> --threads 8 --memory 20
+preprocess --input <input> --output <output> --threads <t> --memory <m>
+```
+
+for example:
+
+```
+preprocess --input data --output ~/rice/output --threads 8 --memory 20 --verbose
 ```
 
 # Dependencies
