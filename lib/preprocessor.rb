@@ -28,7 +28,7 @@ class Preprocessor
     @output_dir = File.expand_path(output)
     @trim_jar = "bin/trimmomatic-0.32.jar"
     @khmer = "normalize-by-median.py"
-    @hammer_path = "/home/chris/documents/apps/SPAdes-3.0.0-Linux/bin/spades.py"
+    @hammer_path = "bin/SPAdes-3.0.0-Linux/bin/spades.py"
     @memory = 4 # TODO set this value
     @threads = 8 # TODO set this value
     @data = []
@@ -123,6 +123,13 @@ class Preprocessor
     # --only-error-correction runs only read error correction (no assembly)
     # --disable-gzip-output forces error correction not to compress the 
     #                       corrected reads
+    if !File.exist?(@hammer_path)
+      wget_cmd = "wget http://spades.bioinf.spbau.ru/release3.0.0/"
+      wget_cmd << "SPAdes-3.0.0-Linux.tar.gz -O bin/spades.tar.gz"
+      `#{wget_cmd}`
+      tar_cmd = "tar xzf bin/spades.tar.gz -C bin"
+      `#{tar_cmd}`
+    end
     if @paired==2
       left=[]
       right=[]
