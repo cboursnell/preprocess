@@ -95,7 +95,7 @@ class Preprocessor
         outfileU_right = "#{@output_dir}/#{b[:type]}_#{b[:rep]}-#{b[:pair]}.tU.fq"
         trim_cmd = "java -jar #{@trim_jar} PE "
         trim_cmd << " -phred#{self.detect_phred} "
-        trim_cmd << " -threads 1 "
+        trim_cmd << " -threads #{@threads} "
         trim_cmd << " #{a[:file]} #{b[:file]} "
         trim_cmd << " #{outfile_left} #{outfileU_left} "
         trim_cmd << "#{outfile_right} #{outfileU_right} "
