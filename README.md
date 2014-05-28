@@ -3,6 +3,30 @@ Preprocessor
 
 A Ruby gem for preprocessing mRNA reads from Illumina sequencing.
 
+Caveat: currently only works with paired reads. 
+
+# Input
+
+The input is file containing one line per fastq file with 4 fields separated by commas. The 4 columns are:
+
+ - Filename, preferably absoluate location not relative
+ - Repetition. The sample number (Integer)
+ - Type. This could be tissue name or cell type etc (String)
+ - Pair. Either 1 or 2 for which file in the pair (Integer)
+
+For example:
+
+```
+/home/chris/documents/rice/rice_BS_1_1.fq,1,BS,1
+/home/chris/documents/rice/rice_BS_1_2.fq,1,BS,2
+/home/chris/documents/rice/rice_BS_2_1.fq,2,BS,1
+/home/chris/documents/rice/rice_BS_2_2.fq,2,BS,2
+/home/chris/documents/rice/rice_M_1_1.fq,1,M,1
+/home/chris/documents/rice/rice_M_1_2.fq,1,M,2
+/home/chris/documents/rice/rice_M_2_1.fq,2,M,1
+/home/chris/documents/rice/rice_M_2_2.fq,2,M,2
+```
+
 # Dependencies
 
  - Ruby
