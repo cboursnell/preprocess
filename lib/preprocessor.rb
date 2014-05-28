@@ -250,6 +250,17 @@ class Preprocessor
       end
       pair = " -p "
     end
+    # unpaired reads
+    cat_cmd = "cat "
+    @data.each_with_index do |a, i|
+      file = a[:unpaired]
+      cat_cmd << " #{file} "
+    end
+    single_output = "#{@output_dir}/single_reads.fq"
+    cat_cmd << " > #{single_output}"
+    if !File.exist?(single_output)
+      `#{cat_cmd}`
+    end
     # khmer
     set = Set.new
     @data.each_with_index do |a, i|
