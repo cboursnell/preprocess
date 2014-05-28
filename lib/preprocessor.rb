@@ -348,4 +348,10 @@ class Preprocessor
     end
     [left_set.to_a, right_set.to_a]
   end
+
+  def run
+    trim
+    hammer
+    khmer
+  end
 end
