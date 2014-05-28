@@ -3,7 +3,7 @@ Preprocessor
 
 A Ruby gem for preprocessing mRNA reads from Illumina sequencing.
 
-Caveat: currently only works with paired reads. 
+Caveat: currently only works with paired reads.
 
 # Input
 
@@ -25,6 +25,14 @@ For example:
 /home/chris/documents/rice/rice_M_1_2.fq,1,M,2
 /home/chris/documents/rice/rice_M_2_1.fq,2,M,1
 /home/chris/documents/rice/rice_M_2_2.fq,2,M,2
+```
+
+# Running
+
+From the command line
+
+```
+preprocess --input <input> --output <output> --threads 8 --memory 20
 ```
 
 # Dependencies
