@@ -90,9 +90,9 @@ class Preprocessor
     elsif @paired==2
       @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
         outfile_left = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{a[:pair]}.t.fq"
-        outfile_right = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{b[:pair]}.t.fq"
+        outfile_right = "#{@output_dir}/#{b[:type]}_#{b[:rep]}-#{b[:pair]}.t.fq"
         outfileU_left = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{a[:pair]}.tU.fq"
-        outfileU_right = "#{@output_dir}/#{a[:type]}_#{a[:rep]}-#{b[:pair]}.tU.fq"
+        outfileU_right = "#{@output_dir}/#{b[:type]}_#{b[:rep]}-#{b[:pair]}.tU.fq"
         trim_cmd = "java -jar #{@trim_jar} PE "
         trim_cmd << " -phred#{self.detect_phred} "
         trim_cmd << " -threads 1 "
