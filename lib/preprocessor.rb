@@ -108,6 +108,7 @@ class Preprocessor
         if !File.exist?("#{outfile_left}")
           puts trim_cmd if @verbose
           # run trim_cmd
+          `#{trim_cmd}`
         else
           puts "trimmomatic already run on #{a[:file]}" if @verbose
         end
