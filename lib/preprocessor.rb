@@ -290,8 +290,14 @@ class Preprocessor
     end
 
     #deinterleave paired reads
-    self.deinterleave(outfile, "#{@output_dir}/#{@data[0][:type]}.left.fq", 
-      "#{@output_dir}/#{@data[1][:type]}.right.fq")
+    khmer_left = "#{@output_dir}/#{@data[0][:type]}.left.fq"
+    khmer_right = "#{@output_dir}/#{@data[1][:type]}.right.fq"
+    self.deinterleave(outfile, khmer_left , khmer_right)
+
+    @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
+      @data[i][:current] = khmer_left
+      @data[j][:current] = khmer_right
+    end
   end
 
   def deinterleave(file, output_left, output_right)
