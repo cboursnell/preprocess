@@ -28,6 +28,19 @@ opts = Trollop::options do
   opt :output, "Directory where output files go",
       :required => true,
       :type => String
+  opt :minlen, "The minimum length for trimmed sequences",
+      :default => 40,
+      :type => :int
+  opt :no_hammer, "There is no time for hammertime"
+  opt :khmer, "The kmer size to use for khmer",
+      :default => 23,
+      :type => :int
+  opt :cutoff, "The coverage cutoff to use for khmer",
+      :default => 20,
+      :type => :int
+  opt :buckets, "The bucket size to use for khmer",
+      :default => 4,
+      :type => :int
   opt :verbose, "Be verbose"
 end
 
@@ -36,8 +49,8 @@ Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
 
 preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose)
 
-preprocessor.trim
+preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2)
 
-preprocessor.hammer
+preprocessor.hammer if !opts.no_hammer
 
-preprocessor.khmer
+preprocessor.khmer(opts.kmer, opts.cutoff, opts.buckets)
