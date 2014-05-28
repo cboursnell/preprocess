@@ -164,6 +164,62 @@ class Preprocessor
     cmd << " --disable-gzip-output -m #{@memory} -t #{@threads}"
     cmd << " -o #{@output_dir}/hammer"
     puts cmd
+    if !Dir.exist?("#{@output_dir}/hammer/corrected")
+      `#{cmd}`
+    end
+    section=nil
+    corrected_left=[]
+    corrected_right=[]
+    corrected_single=[]
+    File.open("#{@output_dir}/hammer/corrected/corrected.yaml").each_line do |line|
+      if line =~ /left.reads/
+        section = :left
+      elsif line =~ /right.reads/
+        section = :right
+      elsif line =~ /single.reads/
+        section = :single
+      elsif line =~ /fastq/
+        if section == :left
+          filename = line.split(/\s+/).last
+          corrected_left << filename
+        elsif section == :right
+          filename = line.split(/\s+/).last
+          corrected_right << filename
+        elsif section == :single
+          filename = line.split(/\s+/).last
+          corrected_single << filename
+        end
+      end
+    end
+    # match the output back with the original file
+    @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
+      left = a[:current]
+      right = b[:current]
+      leftU = a[:unpaired]
+      rightU = b[:unpaired]
+      left = File.basename(left).split(".")[0..-2].join(".")
+      right = File.basename(right).split(".")[0..-2].join(".")
+      leftU = File.basename(leftU).split(".")[0..-2].join(".")
+      rightU = File.basename(rightU).split(".")[0..-2].join(".")
+      corrected_left.each do |corr|
+        if corr =~ /#{left}/
+          @data[i][:current] = corr
+        end
+      end
+      corrected_right.each do |corr|
+        if corr =~ /#{right}/
+          @data[j][:current] = corr
+        end
+      end
+      corrected_single.each do |corr|
+        if corr =~ /#{leftU}/
+          @data[i][:unpaired] = corr
+        end
+        if corr =~ /#{rightU}/
+          @data[j][:unpaired] = corr
+        end
+      end
+    end
     # loads output file location into @data[:current]
   end
 
