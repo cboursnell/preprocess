@@ -289,6 +289,7 @@ class Preprocessor
       `#{cmd}`
     end
 
+    outfile_single = "#{@output_dir}/#{@data[0][:type]}_khmered_single.fq"
     cmd_single = "#{@khmer} -q -k #{kmer} -C #{cutoff} -f -o #{outfile_single}"
     cmd_single << " #{single_output}"
     if !File.exist?(outfile_single)
