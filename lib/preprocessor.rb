@@ -278,9 +278,11 @@ class Preprocessor
       set << a[:current]
     end
     file_list = set.to_a.join(" ")
+    n = 4
+    x = (@memory*1e9/n).to_i
     outfile = "#{@output_dir}/khmered.fq"
-    outfile_single = "#{@output_dir}/#{@data[0][:type]}_khmered_single.fq"
-    cmd = "#{@khmer} #{pair} -q -k #{kmer} -C #{cutoff} -f -o #{outfile} "
+    cmd = "#{@khmer} #{pair} -q -k #{kmer} -C #{cutoff} -N #{n} -x #{x}"
+    cmd << "-f -o #{outfile} "
     cmd << "#{file_list}"
     if !File.exist?(outfile)
       puts cmd
