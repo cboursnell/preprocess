@@ -310,6 +310,7 @@ class Preprocessor
 
   def deinterleave(file, output_left, output_right)
     puts "deinterleaving #{file} to make #{output_left} and #{output_right}"
+    raise RuntimeError.new("Can't find #{file}") if !File.exist?(file)
     fastq = File.open(file)
     left = File.open("#{output_left}", "w")
     right= File.open("#{output_right}", "w")
