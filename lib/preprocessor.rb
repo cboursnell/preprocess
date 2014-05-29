@@ -232,6 +232,7 @@ class Preprocessor
   def khmer(kmer=23, cutoff=20, buckets=4)
     x = (@memory/buckets*1e9).to_i
     # interleave the input files if paired
+    pair = ""
     if @paired==2
       @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
         input_left = a[:current]
