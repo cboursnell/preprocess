@@ -40,7 +40,7 @@ class Preprocessor
         end
         raise RuntimeError.new("#{cols[0]} not found") if !File.exist?(cols[0])
         if cols[3].to_i != 1 and cols[3].to_i != 2
-          raise RuntimeError.new("Pair should be 1 or 2") 
+          raise RuntimeError.new("Pair should be 1 or 2")
         end
         @data << { :file => File.expand_path(cols[0]),
                    :rep => cols[1].to_i,
@@ -120,7 +120,7 @@ class Preprocessor
     # tar -xzf SPAdes-3.0.0-Linux.tar.gz
     # cd SPAdes-3.0.0-Linux/bin/
     # --only-error-correction runs only read error correction (no assembly)
-    # --disable-gzip-output forces error correction not to compress the 
+    # --disable-gzip-output forces error correction not to compress the
     #                       corrected reads
     if !File.exist?(@hammer_path)
       wget_cmd = "wget http://spades.bioinf.spbau.ru/release3.0.0/"
@@ -241,7 +241,7 @@ class Preprocessor
           outfile = "#{@output_dir}/"
           outfile << "#{a[:type]}_#{a[:rep]}-#{a[:pair]}"
           outfile << ".in.fq"
-          
+
           cmd = "paste #{input_left} #{input_right} | paste - - - - | "
           cmd << "awk -v FS=\"\\t\" -v OFS=\"\\n\" \'{print(\"@read\"NR\":1\","
           cmd << "$3,$5,$7,\"@read\"NR\":2\",$4,$6,$8)}\' > "
@@ -262,7 +262,7 @@ class Preprocessor
     found=false
     @data.each_with_index do |a, i|
       if a[:unpaired]
-        file = a[:unpaired] 
+        file = a[:unpaired]
         cat_cmd << " #{file} "
         found=true
       end
