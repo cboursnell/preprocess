@@ -50,12 +50,24 @@ opts = Trollop::options do
       :default => 4,
       :type => :int
   opt :verbose, "Be verbose"
+  opt :morehelp, "Get help on how to format the input file"
 end
+
+if opts.morehelp
+  puts "The input file should contain a line describing each input fastq file"
+  puts "Each line should contain four fields separated by commas"
+  puts "   1) Path to the fastq file"
+  puts "   2) What rep this file belongs to (integer)"
+  puts "   3) What type of sample this is (eg cell type or WT/M)"
+  puts "   4) Which pair of paired reads. (integer, either 1 or 2)"
+  exit
+else
+
 
 Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
 Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
 
-preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose, 
+preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose,
   opts.threads, opts.memory)
 
 preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2) if !opts.no_trim
@@ -63,3 +75,4 @@ preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2) if !opts.no_trim
 preprocessor.hammer if !opts.no_hammer
 
 preprocessor.khmer(opts.kmer, opts.cutoff, opts.buckets) if !opts.no_khmer
+end
