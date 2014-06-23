@@ -16,17 +16,17 @@ require 'trollop'
 require 'preprocessor'
 
 opts = Trollop::options do
-  version "v0.1"
+  version "v0.2"
   banner <<-EOS
   mRna preprocessor pipeline
 
   author: Chris Boursnell (cmb211@cam.ac.uk)
   EOS
   opt :input, "Input file describing fastq files",
-      :required => true,
+      # :required => true,
       :type => String
   opt :output, "Directory where output files go",
-      :required => true,
+      # :required => true,
       :type => String
   opt :threads, "Number of threads to use",
       :default => 1,
@@ -60,19 +60,22 @@ if opts.morehelp
   puts "   2) What rep this file belongs to (integer)"
   puts "   3) What type of sample this is (eg cell type or WT/M)"
   puts "   4) Which pair of paired reads. (integer, either 1 or 2)"
+  puts "eg:"
+  puts "fastq/BS-1-R1.fastq,1,BS,1"
+  puts "fastq/BS-1-R2.fastq,1,BS,2"
+  puts "fastq/M-1-R1.fastq,1,M,1"
+  puts "fastq/M-1-R2.fastq,1,M,2"
   exit
 else
+  Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
+  Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
 
+  preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose,
+    opts.threads, opts.memory)
 
-Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
-Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
+  preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2) if !opts.no_trim
 
-preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose,
-  opts.threads, opts.memory)
+  preprocessor.hammer if !opts.no_hammer
 
-preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2) if !opts.no_trim
-
-preprocessor.hammer if !opts.no_hammer
-
-preprocessor.khmer(opts.kmer, opts.cutoff, opts.buckets) if !opts.no_khmer
+  preprocessor.khmer(opts.kmer, opts.cutoff, opts.buckets) if !opts.no_khmer
 end
