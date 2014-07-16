@@ -12,8 +12,12 @@
 ## # # # # # # # # # # # # #
 
 require 'rubygems'
-require 'preprocessor'
+#require 'preprocessor'
 require 'set'
+require 'cmd'
+require 'which'
+require 'bindeps'
+include Which
 
 class MalformedInputError < StandardError
 end
@@ -21,14 +25,15 @@ end
 class Preprocessor
 
   attr_accessor :input, :output, :phred
+  attr_reader :data
 
   def initialize(input, output, verbose, threads=1, memory=4)
     @input = input
     @verbose = verbose
     @output_dir = File.expand_path(output)
     @trim_jar = "bin/trimmomatic-0.32.jar"
-    @khmer = "normalize-by-median.py"
-    @hammer_path = "bin/SPAdes-3.0.0-Linux/bin/spades.py"
+    @khmer = which("normalize-by-median.py").first
+    @hammer_path = "bin/SPAdes-3.1.0-Linux/bin/spades.py"
     @memory = memory
     @threads = threads
     @data = []
@@ -72,11 +77,14 @@ class Preprocessor
     max = scores.keys.max
     min = scores.keys.min
     @phred = -1
-    if max == 74 or max == 73
+    if max <= 74
       @phred = 33
-    elsif max == 104 or max == 103
+    elsif max <= 105
       @phred = 64
+    else
+      raise RuntimeError.new("Couldn't determine phred formatting")
     end
+    file.close # is this correct?
     return @phred
   end
 
@@ -96,9 +104,9 @@ class Preprocessor
         trim_cmd = "java -jar #{@trim_jar} PE "
         trim_cmd << " -phred#{self.detect_phred} "
         trim_cmd << " -threads #{@threads} "
-        trim_cmd << " #{a[:file]} #{b[:file]} "
+        trim_cmd << " #{a[:current]} #{b[:current]} "
         trim_cmd << " #{outfile_left} #{outfileU_left} "
-        trim_cmd << "#{outfile_right} #{outfileU_right} "
+        trim_cmd << " #{outfile_right} #{outfileU_right} "
         trim_cmd << " LEADING:#{leading} TRAILING:#{trailing} "
         trim_cmd << " SLIDINGWINDOW:#{windowsize}:#{quality} MINLEN:#{minlen}"
         @data[i][:current] = outfile_left
@@ -107,7 +115,8 @@ class Preprocessor
         @data[j][:unpaired] = outfileU_right
         if !File.exist?("#{outfile_left}")
           # puts trim_cmd if @verbose
-          `#{trim_cmd}`
+          cmd = Cmd.new(trim_cmd)
+          cmd.run
         else
           puts "trimmomatic already run on #{a[:file]}" if @verbose
         end
@@ -115,20 +124,7 @@ class Preprocessor
     end
   end
 
-  def hammer
-    # wget http://spades.bioinf.spbau.ru/release3.0.0/SPAdes-3.0.0-Linux.tar.gz
-    # tar -xzf SPAdes-3.0.0-Linux.tar.gz
-    # cd SPAdes-3.0.0-Linux/bin/
-    # --only-error-correction runs only read error correction (no assembly)
-    # --disable-gzip-output forces error correction not to compress the
-    #                       corrected reads
-    if !File.exist?(@hammer_path)
-      wget_cmd = "wget http://spades.bioinf.spbau.ru/release3.0.0/"
-      wget_cmd << "SPAdes-3.0.0-Linux.tar.gz -O bin/spades.tar.gz"
-      `#{wget_cmd}`
-      tar_cmd = "tar xzf bin/spades.tar.gz -C bin"
-      `#{tar_cmd}`
-    end
+  def construct_hammer_input
     if @paired==2
       left=[]
       right=[]
@@ -154,24 +150,55 @@ class Preprocessor
         yaml << "," if j < right.length-1
         yaml << "\n"
       end
-      yaml << "    ],\n  },\n  {\n"
-      yaml << "    type: \"single\",\n    single reads: [\n"
-      single.each_with_index do |single_read, j|
-        yaml << "      \"#{single_read}\""
-        yaml << "," if j < single.length-1
-        yaml << "\n"
+      yaml << "    ],\n  }"
+      if single.size > 0
+        yaml << ",\n  {\n"
+        yaml << "    type: \"single\",\n    single reads: [\n"
+        single.each_with_index do |single_read, j|
+          yaml << "      \"#{single_read}\""
+          yaml << "," if j < single.length-1
+          yaml << "\n"
+        end
+        yaml << "    ]\n  }"
       end
-      yaml << "    ]\n  }\n]\n"
+      yaml << "\n]\n"
     end
     # puts yaml
     File.open("#{@output_dir}/dataset.yaml","w") {|io| io.write yaml}
+  end
+
+  def hammer
+    # wget http://spades.bioinf.spbau.ru/release3.0.0/SPAdes-3.0.0-Linux.tar.gz
+    # tar -xzf SPAdes-3.0.0-Linux.tar.gz
+    # cd SPAdes-3.0.0-Linux/bin/
+    # --only-error-correction runs only read error correction (no assembly)
+    # --disable-gzip-output forces error correction not to compress the
+    #                       corrected reads
+    if !File.exist?(@hammer_path)
+      wget_cmd = "wget http://spades.bioinf.spbau.ru/release3.1.0/"
+      wget_cmd << "SPAdes-3.1.0-Linux.tar.gz -O bin/spades.tar.gz"
+      tar_cmd = "tar xzf bin/spades.tar.gz -C bin"
+      # wget
+      download = Cmd.new(wget_cmd)
+      download.run
+      puts download.cmd if @verbose
+
+      # tar
+      unpack = Cmd.new(tar_cmd)
+      unpack.run
+      puts unpack.cmd if @verbose
+    end
+    construct_hammer_input
+
     cmd = "python #{@hammer_path} --dataset #{@output_dir}/dataset.yaml "
     cmd << " --only-error-correction "
     cmd << " --disable-gzip-output -m #{@memory} -t #{@threads}"
     cmd << " -o #{@output_dir}/hammer"
-    puts cmd
+
     if !Dir.exist?("#{@output_dir}/hammer/corrected")
-      `#{cmd}`
+      c = Cmd.new(cmd)
+      c.run
+      c.cmd if @verbose
     end
     section=nil
     corrected_left=[]
@@ -197,16 +224,17 @@ class Preprocessor
         end
       end
     end
+
     # match the output back with the original file
     @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
       left = a[:current]
       right = b[:current]
-      leftU = a[:unpaired]
-      rightU = b[:unpaired]
+      leftU = a[:unpaired] if a[:unpaired]
+      rightU = b[:unpaired] if b[:unpaired]
       left = File.basename(left).split(".")[0..-2].join(".")
       right = File.basename(right).split(".")[0..-2].join(".")
-      leftU = File.basename(leftU).split(".")[0..-2].join(".")
-      rightU = File.basename(rightU).split(".")[0..-2].join(".")
+      leftU = File.basename(leftU).split(".")[0..-2].join(".") if a[:unpaired]
+      rightU = File.basename(rightU).split(".")[0..-2].join(".") if b[:unpaired]
       corrected_left.each do |corr|
         if corr =~ /#{left}/
           @data[i][:current] = corr
@@ -217,12 +245,14 @@ class Preprocessor
           @data[j][:current] = corr
         end
       end
-      corrected_single.each do |corr|
-        if corr =~ /#{leftU}/
-          @data[i][:unpaired] = corr
-        end
-        if corr =~ /#{rightU}/
-          @data[j][:unpaired] = corr
+      if corrected_single.size > 0
+        corrected_single.each do |corr|
+          if corr =~ /#{leftU}/
+            @data[i][:unpaired] = corr
+          end
+          if corr =~ /#{rightU}/
+            @data[j][:unpaired] = corr
+          end
         end
       end
     end
@@ -230,10 +260,13 @@ class Preprocessor
   end
 
   def khmer(kmer=23, cutoff=20, buckets=4)
+    if @khmer.nil?
+      raise RuntimeError.new("khmer normalize-by-median not installed")
+    end
     x = (@memory/buckets*1e9).to_i
     # interleave the input files if paired
     pair = ""
-    if @paired==2
+    if @paired == 2
       @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
         input_left = a[:current]
         input_right = b[:current]
@@ -246,9 +279,10 @@ class Preprocessor
           cmd << "awk -v FS=\"\\t\" -v OFS=\"\\n\" \'{print(\"@read\"NR\":1\","
           cmd << "$3,$5,$7,\"@read\"NR\":2\",$4,$6,$8)}\' > "
           cmd << " #{outfile}"
-          puts cmd
           if !File.exist?(outfile)
-            `#{cmd}`
+            c = Cmd.new(cmd)
+            c.run
+            puts c.cmd if @verbose
           end
           @data[i][:current] = outfile
           @data[j][:current] = outfile
@@ -256,8 +290,10 @@ class Preprocessor
         end
       end
       pair = " -p "
+    else
+      raise RuntimeError.new("single reads not currently supported as input")
     end
-    # unpaired reads
+    # unpaired reads - cat all the single unpaired reads together
     cat_cmd = "cat "
     found=false
     @data.each_with_index do |a, i|
@@ -270,7 +306,9 @@ class Preprocessor
     single_output = "#{@output_dir}/single_reads.fq"
     cat_cmd << " > #{single_output}"
     if !File.exist?(single_output) and found
-      `#{cat_cmd}`
+      cat = Cmd.new(cat_cmd)
+      cat.run
+      puts cat.cmd if @verbose
     end
     # khmer
     set = Set.new
@@ -278,29 +316,36 @@ class Preprocessor
       set << a[:current]
     end
     file_list = set.to_a.join(" ")
-    n = 4
-    x = (@memory*1e9/n).to_i
+    x = (@memory*1e9/buckets).to_i
     outfile = "#{@output_dir}/khmered.fq"
-    cmd = "#{@khmer} #{pair} -q -k #{kmer} -C #{cutoff} -N #{n} -x #{x}"
-    cmd << "-f -o #{outfile} "
+
+    cmd = "#{@khmer} #{pair} --quiet "
+    cmd << " --ksize #{kmer} --cutoff #{cutoff} "
+    cmd << " --n_tables #{buckets}  --min-tablesize #{x} "
+    cmd << " --fault-tolerant --out #{outfile} "
     cmd << "#{file_list}"
     if !File.exist?(outfile)
-      puts cmd
-      `#{cmd}`
+      c = Cmd.new(cmd)
+      c.run
+      puts c.cmd if @verbose
     end
 
-    outfile_single = "#{@output_dir}/#{@data[0][:type]}_khmered_single.fq"
-    cmd_single = "#{@khmer} -q -k #{kmer} -C #{cutoff} -f -o #{outfile_single}"
-    cmd_single << " #{single_output}"
-    if !File.exist?(outfile_single)
-      puts cmd_single
-      `#{cmd_single}`
+    if found
+      # khmer on single unpaired reads
+      outfile_single = "#{@output_dir}/#{@data[0][:type]}_khmered_single.fq"
+      cmd_single = "#{@khmer} -q -k #{kmer} -C #{cutoff} -f -o #{outfile_single}"
+      cmd_single << " #{single_output}"
+      if !File.exist?(outfile_single)
+        c = Cmd.new(cmd_single)
+        c.run
+        puts c.cmd if @verbose
+      end
     end
 
     #deinterleave paired reads
     khmer_left = "#{@output_dir}/#{@data[0][:type]}.left.fq"
     khmer_right = "#{@output_dir}/#{@data[1][:type]}.right.fq"
-    self.deinterleave(outfile, khmer_left , khmer_right)
+    self.deinterleave(outfile, khmer_left, khmer_right)
 
     @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
       @data[i][:current] = khmer_left
@@ -346,6 +391,92 @@ class Preprocessor
     fastq.close
     left.close
     right.close
+  end
+
+  def bbnorm(k=31, target_coverage=20, bits=8, tables=3)
+
+    gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+    bbnorm = File.join(gem_dir, 'bin', 'bbmap', 'bbnorm.sh')
+    # download
+    if !File.exist?(bbnorm)
+      dl = Gem.loaded_specs['preprocessor'].full_gem_path
+      dl << "/bin/bbmap.tar.gz"
+      cmd = "wget http://kent.dl.sourceforge.net/project/bbmap/"
+      cmd << "BBMap_33.08_java7.tar.gz -O #{dl}"
+
+      wget = Cmd.new(cmd)
+      wget.run
+      puts wget.stdout if @verbose
+      puts wget.cmd if @verbose
+      if wget.status.success?
+        cmd = "tar xzf #{dl} --directory "
+        cmd << Gem.loaded_specs['preprocessor'].full_gem_path
+        cmd << "/bin"
+        untar = Cmd.new(cmd)
+        untar.run
+        puts untar.stdout if @verbose
+        puts untar.cmd if @verbose
+        if !untar.status.success?
+          raise RuntimeError.new("untar failed")
+        end
+      else
+        raise RuntimeError.new("download failed")
+      end
+    end
+    # run for each pair
+    @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
+      left  = a[:current]
+      right = b[:current]
+      single_left = a[:unpaired] if a[:unpaired]
+      single_right = b[:unpaired] if b[:unpaired]
+      puts left
+      puts right
+      outfile = "#{left}.keep" # interleaved output of left and right
+      if left and right
+        # parameters
+        lowthresh=1
+        mindepth=6
+        #
+        cmd = "#{bbnorm} in=#{left} in2=#{right} "
+        cmd << "out=#{outfile} "
+        # cmd << "outt=#{toss} " # not sure if this is necessary
+        cmd << "k=#{k} "
+        cmd << "hashes=#{tables} "
+        cmd << "bits=#{bits} "
+        cmd << "lowthresh=#{lowthresh} "
+        cmd << "mindepth=#{mindepth} "
+        cmd << "target=#{target_coverage} "
+        cmd << "threads=#{@threads}"
+        norm = Cmd.new(cmd)
+        puts norm.cmd if @verbose
+        norm.run
+        if !norm.status.success?
+          puts norm.stdout
+          puts norm.stderr
+          raise RuntimeError.new("something went wrong with bbnorm")
+        end
+        # now deinterleave output files back into left and right
+
+        leftoutput = "#{@output_dir}/"
+        leftoutput << "#{a[:type]}-#{a[:rep]}-#{a[:pair]}.bbnorm.fq"
+        rightoutput = "#{@output_dir}/"
+        rightoutput << "#{b[:type]}-#{b[:rep]}-#{b[:pair]}.bbnorm.fq"
+        deinterleave(outfile, leftoutput, rightoutput)
+        # delete intermediate
+        File.delete(outfile)
+        # save names
+        a[:current] = leftoutput
+        b[:current] = rightoutput
+      end
+
+
+      if single_left
+        puts single_left
+      end
+      if single_right
+        puts single_right
+      end
+    end
   end
 
   def get_output
