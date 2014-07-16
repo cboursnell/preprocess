@@ -1,5 +1,10 @@
 *yaml
 *gem
+Gemfile.lock
+coverage
+dry_run
 
-bin/SPAdes-3.0.0-Linux
+bin/SPAdes-*-Linux
 bin/spades.tar.gz
+bin/bbmap
+bin/bbmap.tar.gz
