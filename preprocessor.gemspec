@@ -1,7 +1,7 @@
 Gem::Specification.new do |gem|
   gem.name          = 'preprocessor'
-  gem.version       = '0.1'
-  gem.date          = '2014-05-27'
+  gem.version       = '0.3'
+  gem.date          = '2014-07-16'
   gem.summary       = "Preprocess mRNA reads"
   gem.description   = "See summary"
   gem.authors       = ["Chris Boursnell", "Richard Smith-Unna"]

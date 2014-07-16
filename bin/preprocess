@@ -16,7 +16,7 @@ require 'trollop'
 require 'preprocessor'
 
 opts = Trollop::options do
-  version "v0.2"
+  version "v0.3"
   banner <<-EOS
   mRna preprocessor pipeline
 
