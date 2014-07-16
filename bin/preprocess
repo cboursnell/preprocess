@@ -34,20 +34,29 @@ opts = Trollop::options do
   opt :memory, "Memory to use in GB",
       :default => 4,
       :type => :int
-  opt :no_trim, "Don't trim the input files"
-  opt :no_hammer, "There is no time for hammertime"
-  opt :no_khmer, "Don't run digital normalisation"
+  # opt :no_trim, "Don't trim the input files"
+  # opt :no_hammer, "There is no time for hammertime"
+  # opt :no_khmer, "Don't run digital normalisation"
+  opt :trimmer, "Which trimming program to use (trimmomatic)",
+      :default => "trimmomatic",
+      :type => String
+  opt :correction, "Which read error correction program to use (hammer)",
+      :default => "hammer",
+      :type => String
+  opt :normalise, "Which digital normalisation program to run (khmer/bbnorm)",
+      :default => "bbnorm",
+      :type => String
   opt :minlen, "The minimum length for trimmed sequences",
       :default => 40,
       :type => :int
-  opt :kmer, "The kmer size to use for khmer",
+  opt :kmer, "The kmer size to use for digital normalisation",
       :default => 23,
       :type => :int
-  opt :cutoff, "The coverage cutoff to use for khmer",
+  opt :cutoff, "The coverage cutoff to use for digital normalisation",
       :default => 20,
       :type => :int
-  opt :buckets, "The bucket size to use for khmer",
-      :default => 4,
+  opt :tables, "The number of hash tables to use for digital normalisation",
+      :default => 3,
       :type => :int
   opt :verbose, "Be verbose"
   opt :morehelp, "Get help on how to format the input file"
@@ -66,18 +75,32 @@ if opts.morehelp
   puts "fastq/M-1-R1.fastq,1,M,1"
   puts "fastq/M-1-R2.fastq,1,M,2"
   exit
+end
+
+Trollop::die "Must specify input" if !opts.input
+Trollop::die "Must specify output" if !opts.output
+Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
+Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
+
+preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose,
+  opts.threads, opts.memory)
+
+if opts.trimmer == "trimmomatic"
+  preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2)
 else
-  Trollop::die "Must specify input" if !opts.input
-  Trollop::die "Must specify output" if !opts.output
-  Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
-  Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
+  raise RuntimeError.new("#{opts.trimer} is not a valid input to trimmer")
+end
 
-  preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose,
-    opts.threads, opts.memory)
+if opts.correction == "hammer"
+  preprocessor.hammer
+else
+  raise RuntimeError.new("#{opts.correction} is not a valid input to correction")
+end
 
-  preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2) if !opts.no_trim
-
-  preprocessor.hammer if !opts.no_hammer
-
-  preprocessor.khmer(opts.kmer, opts.cutoff, opts.buckets) if !opts.no_khmer
+if opts.normalise == "bbnorm"
+  preprocessor.bbnorm(opts.kmer, opts.cutoff, 8, opts.tables)
+elsif opts.normalise == "khmer"
+  preprocessor.khmer(opts.kmer, opts.cutoff, opts.tables)
+else
+  raise RuntimeError.new("#{opts.normalise} is not a valid input to normalise")
 end
