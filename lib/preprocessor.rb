@@ -17,6 +17,7 @@ require 'set'
 require 'cmd'
 require 'which'
 require 'bindeps'
+#require 'mytest' # k-winnow
 include Which
 
 class MalformedInputError < StandardError
@@ -88,7 +89,7 @@ class Preprocessor
     return @phred
   end
 
-  def trim(minlen=40, windowsize=4, quality=15, trailing=15,
+  def trimmomatic(minlen=40, windowsize=4, quality=15, trailing=15,
             leading=15, mismatches=2)
     if @paired==1
       @data.each_with_index do |a, i|
@@ -354,7 +355,7 @@ class Preprocessor
   end
 
   def deinterleave(file, output_left, output_right)
-    puts "deinterleaving #{file} to make #{output_left} and #{output_right}"
+    #puts "deinterleaving #{file} to make #{output_left} and #{output_right}"
     raise RuntimeError.new("Can't find #{file}") if !File.exist?(file)
     fastq = File.open(file)
     left = File.open("#{output_left}", "w")
@@ -399,8 +400,7 @@ class Preprocessor
     bbnorm = File.join(gem_dir, 'bin', 'bbmap', 'bbnorm.sh')
     # download
     if !File.exist?(bbnorm)
-      dl = Gem.loaded_specs['preprocessor'].full_gem_path
-      dl << "/bin/bbmap.tar.gz"
+      dl = "#{gem_dir}/bin/bbmap.tar.gz"
       cmd = "wget http://kent.dl.sourceforge.net/project/bbmap/"
       cmd << "BBMap_33.08_java7.tar.gz -O #{dl}"
 
@@ -410,8 +410,7 @@ class Preprocessor
       puts wget.cmd if @verbose
       if wget.status.success?
         cmd = "tar xzf #{dl} --directory "
-        cmd << Gem.loaded_specs['preprocessor'].full_gem_path
-        cmd << "/bin"
+        cmd << "#{gem_dir}/bin"
         untar = Cmd.new(cmd)
         untar.run
         puts untar.stdout if @verbose
@@ -429,8 +428,6 @@ class Preprocessor
       right = b[:current]
       single_left = a[:unpaired] if a[:unpaired]
       single_right = b[:unpaired] if b[:unpaired]
-      puts left
-      puts right
       outfile = "#{left}.keep" # interleaved output of left and right
       if left and right
         # parameters
@@ -477,6 +474,10 @@ class Preprocessor
         puts single_right
       end
     end
+  end
+
+  def norm
+
   end
 
   def get_output
