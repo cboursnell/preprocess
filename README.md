@@ -27,6 +27,8 @@ For example:
 /home/chris/documents/rice/rice_M_2_2.fq,2,M,2
 ```
 
+Currently only paired reads are supported.
+
 # Usage
 
 From the command line
@@ -43,10 +45,11 @@ preprocess --input data --output ~/rice/output --threads 8 --memory 20 --verbose
 
 # Dependencies
 
- - Ruby
- - Java
- - Khmer
- - SPAdes
+ - Ruby (at least version 2.0.0)
+ - Java (at least -version 1.7.0_55)
+ - Khmer (normalise-by-median.py)
+ - SPAdes (automatically downloaded if not already installed)
+ - trimmomatic (jar file included included)
 
 # Installation of Khmer
 
