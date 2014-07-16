@@ -67,6 +67,8 @@ if opts.morehelp
   puts "fastq/M-1-R2.fastq,1,M,2"
   exit
 else
+  Trollop::die "Must specify input" if !opts.input
+  Trollop::die "Must specify output" if !opts.output
   Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
   Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
 
