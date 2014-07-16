@@ -466,12 +466,50 @@ class Preprocessor
         b[:current] = rightoutput
       end
 
-
       if single_left
-        puts single_left
+        single_left_output = "#{@output_dir}/"
+        single_left_output << "#{a[:type]}-#{a[:rep]}-#{a[:pair]}U.bbnorm.fq"
+        cmd = "#{bbnorm} in=#{single_left} "
+        cmd << "out=#{single_left_output} "
+        cmd << "k=#{k} "
+        cmd << "hashes=#{tables} "
+        cmd << "bits=#{bits} "
+        cmd << "lowthresh=#{lowthresh} "
+        cmd << "mindepth=#{mindepth} "
+        cmd << "target=#{target_coverage} "
+        cmd << "threads=#{@threads}"
+        norm = Cmd.new(cmd)
+        puts norm.cmd if @verbose
+        norm.run
+        if !norm.status.success?
+          puts norm.stdout
+          puts norm.stderr
+          raise RuntimeError.new("something went wrong with bbnorm")
+        end
+        @data[i][:unpaired] = single_left_output
       end
+
       if single_right
-        puts single_right
+        single_right_output = "#{@output_dir}/"
+        single_right_output << "#{b[:type]}-#{b[:rep]}-#{b[:pair]}U.bbnorm.fq"
+        cmd = "#{bbnorm} in=#{single_right} "
+        cmd << "out=#{single_right_output} "
+        cmd << "k=#{k} "
+        cmd << "hashes=#{tables} "
+        cmd << "bits=#{bits} "
+        cmd << "lowthresh=#{lowthresh} "
+        cmd << "mindepth=#{mindepth} "
+        cmd << "target=#{target_coverage} "
+        cmd << "threads=#{@threads}"
+        norm = Cmd.new(cmd)
+        puts norm.cmd if @verbose
+        norm.run
+        if !norm.status.success?
+          puts norm.stdout
+          puts norm.stderr
+          raise RuntimeError.new("something went wrong with bbnorm")
+        end
+        @data[j][:unpaired] = single_right_output
       end
     end
   end
