@@ -54,10 +54,19 @@ class TestPreprocessor < Test::Unit::TestCase
 
     should 'run bbnorm' do
       @pre.bbnorm
-      File.exist?("#{@output}/A-1-1.bbnorm.fq")
-      File.exist?("#{@output}/A-1-2.bbnorm.fq")
-      File.exist?("#{@output}/A-2-1.bbnorm.fq")
-      File.exist?("#{@output}/A-2-2.bbnorm.fq")
+      assert File.exist?("#{@output}/A-1-1.bbnorm.fq")
+      assert File.exist?("#{@output}/A-1-2.bbnorm.fq")
+      assert File.exist?("#{@output}/A-2-1.bbnorm.fq")
+      assert File.exist?("#{@output}/A-2-2.bbnorm.fq")
+    end
+
+    should 'trim and then bbnorm' do
+      @pre.trimmomatic
+      @pre.bbnorm
+      assert File.exist?("#{@output}/A-1-1U.bbnorm.fq")
+      assert File.exist?("#{@output}/A-1-2U.bbnorm.fq")
+      assert File.exist?("#{@output}/A-2-1U.bbnorm.fq")
+      assert File.exist?("#{@output}/A-2-2U.bbnorm.fq")
     end
 
     # should 'run my normaliser' do
