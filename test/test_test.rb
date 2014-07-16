@@ -21,40 +21,39 @@ class TestPreprocessor < Test::Unit::TestCase
 
     end
 
-    # should 'setup should run ok' do
-    #   assert @pre
-    # end
+    should 'setup should run ok' do
+      assert @pre
+    end
 
-    # should 'trim reads using trimmomatic' do
-    #   @pre.trim
-    #   assert File.exist?("#{@output}/A_1-1.t.fq")
-    #   assert File.exist?("#{@output}/A_1-2.t.fq")
-    #   @pre.data.each do |hash|
-    #     assert hash[:current]
-    #     assert hash[:unpaired]
-    #   end
-    # end
+    should 'trim reads using trimmomatic' do
+      @pre.trim
+      assert File.exist?("#{@output}/A_1-1.t.fq")
+      assert File.exist?("#{@output}/A_1-2.t.fq")
+      @pre.data.each do |hash|
+        assert hash[:current]
+        assert hash[:unpaired]
+      end
+    end
 
-    # should 'normalise reads with khmer' do
-    #   @pre.khmer
+    should 'normalise reads with khmer' do
+      @pre.khmer
 
-    #   assert File.exist?("#{@output}/A.left.fq")
-    #   assert File.exist?("#{@output}/A.right.fq")
-    #   p @pre.data
-    # end
+      assert File.exist?("#{@output}/A.left.fq")
+      assert File.exist?("#{@output}/A.right.fq")
+      p @pre.data
+    end
 
-    # should 'construct hammer input' do
-    #   @pre.construct_hammer_input
-    #   assert File.exist?("#{@output}/dataset.yaml")
-    # end
+    should 'construct hammer input' do
+      @pre.construct_hammer_input
+      assert File.exist?("#{@output}/dataset.yaml")
+    end
 
-    # should 'hammer reads' do
-    #   @pre.hammer
-    # end
+    should 'hammer reads' do
+      @pre.hammer
+    end
 
     should 'run bbnorm' do
       a = @pre.bbnorm
-      puts a
     end
   end
 end
