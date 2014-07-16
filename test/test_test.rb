@@ -9,16 +9,17 @@ class TestPreprocessor < Test::Unit::TestCase
 
     setup do
       input = File.join(File.dirname(__FILE__), 'data', 'raw_data')
-      # @output = Dir.mktmpdir
-      @output = "dry_run"
-      verbose = true
+      @output = Dir.mktmpdir
+      verbose = false
       threads = 1
       memory = 1
       @pre = Preprocessor.new(input, @output, verbose, threads, memory)
     end
 
     teardown do
-
+      # delete output folder
+      cmd = "rm -rf #{@output}"
+      `#{cmd}`
     end
 
     should 'setup should run ok' do
@@ -26,7 +27,7 @@ class TestPreprocessor < Test::Unit::TestCase
     end
 
     should 'trim reads using trimmomatic' do
-      @pre.trim
+      @pre.trimmomatic
       assert File.exist?("#{@output}/A_1-1.t.fq")
       assert File.exist?("#{@output}/A_1-2.t.fq")
       @pre.data.each do |hash|
@@ -40,7 +41,6 @@ class TestPreprocessor < Test::Unit::TestCase
 
       assert File.exist?("#{@output}/A.left.fq")
       assert File.exist?("#{@output}/A.right.fq")
-      p @pre.data
     end
 
     should 'construct hammer input' do
@@ -53,7 +53,15 @@ class TestPreprocessor < Test::Unit::TestCase
     end
 
     should 'run bbnorm' do
-      a = @pre.bbnorm
+      @pre.bbnorm
+      File.exist?("#{@output}/A-1-1.bbnorm.fq")
+      File.exist?("#{@output}/A-1-2.bbnorm.fq")
+      File.exist?("#{@output}/A-2-1.bbnorm.fq")
+      File.exist?("#{@output}/A-2-2.bbnorm.fq")
     end
+
+    # should 'run my normaliser' do
+    #   @pre.norm
+    # end
   end
 end
