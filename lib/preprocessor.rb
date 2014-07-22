@@ -17,7 +17,6 @@ require 'set'
 require 'cmd'
 require 'which'
 require 'bindeps'
-#require 'mytest' # k-winnow
 include Which
 
 class MalformedInputError < StandardError
@@ -28,8 +27,7 @@ class Preprocessor
   attr_accessor :input, :output, :phred
   attr_reader :data
 
-  def initialize(input, output, verbose, threads=1, memory=4)
-    @input = input
+  def initialize(output, verbose, threads=1, memory=4)
     @verbose = verbose
     @output_dir = File.expand_path(output)
     @trim_jar = "bin/trimmomatic-0.32.jar"
@@ -38,6 +36,10 @@ class Preprocessor
     @memory = memory
     @threads = threads
     @data = []
+
+  end
+
+  def load_input(input)
     if File.exist?(input)
       File.open("#{input}").each_line do |line|
         cols = line.chomp.split(",")
@@ -54,10 +56,31 @@ class Preprocessor
                    :pair => cols[3].to_i,
                    :current => File.expand_path(cols[0]) }
       end
+      @paired = @data.reduce(0) {|max,v| max=[max,v[:pair]].max}
     else
       raise RuntimeError, "#{input} does not exist"
     end
-    @paired = @data.reduce(0) {|max,v| max=[max,v[:pair]].max}
+  end
+
+  def load_reads(left, right)
+    @data = []
+    rep = 1
+    left.split(",").zip(right.split(",")).each do |a, b|
+      # left
+      @data << { :file => File.expand_path(a),
+                 :rep => rep,
+                 :type => "A",
+                 :pair => 1,
+                 :current => File.expand_path(a) }
+      # right
+      @data << { :file => File.expand_path(b),
+                 :rep => rep,
+                 :type => "A",
+                 :pair => 2,
+                 :current => File.expand_path(b) }
+      rep += 1
+    end
+    @paired = 2
   end
 
   def detect_phred

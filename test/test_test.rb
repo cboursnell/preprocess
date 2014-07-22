@@ -13,7 +13,8 @@ class TestPreprocessor < Test::Unit::TestCase
       verbose = false
       threads = 1
       memory = 1
-      @pre = Preprocessor.new(input, @output, verbose, threads, memory)
+      @pre = Preprocessor.new(@output, verbose, threads, memory)
+      @pre.load_input(input)
     end
 
     teardown do
@@ -24,6 +25,21 @@ class TestPreprocessor < Test::Unit::TestCase
 
     should 'setup should run ok' do
       assert @pre
+    end
+
+    should 'load reads without input file' do
+      verbose = false
+      threads = 1
+      memory = 1
+      left = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq')
+      left << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-1.fq')}"
+      right = File.join(File.dirname(__FILE__), 'data', 'A-1-2.fq')
+      right << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-2.fq')}"
+      pre = Preprocessor.new(@output, verbose, threads, memory)
+      pre.load_reads(left, right)
+      pre.trimmomatic
+      pre.hammer
+      pre.bbnorm
     end
 
     should 'trim reads using trimmomatic' do
@@ -38,7 +54,6 @@ class TestPreprocessor < Test::Unit::TestCase
 
     should 'normalise reads with khmer' do
       @pre.khmer
-
       assert File.exist?("#{@output}/A.left.fq")
       assert File.exist?("#{@output}/A.right.fq")
     end
