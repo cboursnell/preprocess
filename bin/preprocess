@@ -22,11 +22,13 @@ opts = Trollop::options do
 
   author: Chris Boursnell (cmb211@cam.ac.uk)
   EOS
-  opt :input, "Input file describing fastq files",
-      # :required => true,
+  opt :left, "Comma separated list of fastq files",
+      :type => String
+  opt :right, "Comma separated list of fastq files",
+      :type => String
+  opt :input, "Input file describing fastq files. Ignored if left and right specified",
       :type => String
   opt :output, "Directory where output files go",
-      # :required => true,
       :type => String
   opt :threads, "Number of threads to use",
       :default => 1,
@@ -74,13 +76,28 @@ if opts.morehelp
   exit
 end
 
-Trollop::die "Must specify input" if !opts.input
+if opts.left and opts.right
+  opts.left.split(",").each do |file|
+    Trollop::die :input, "must exist" if !File.exist?(file)
+  end
+  opts.right.split(",").each do |file|
+    Trollop::die :input, "must exist" if !File.exist?(file)
+  end
+else
+  Trollop::die "Must specify input" if !opts.input
+  Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
+end
 Trollop::die "Must specify output" if !opts.output
-Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
 Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
 
-preprocessor = Preprocessor.new(opts.input, opts.output, opts.verbose,
-  opts.threads, opts.memory)
+preprocessor = Preprocessor.new(opts.output, opts.verbose, opts.threads,
+                                opts.memory)
+
+if opts.left and opts.right
+  preprocessor.load_reads(opts.left, opts.right)
+else
+  preprocessor.load_input(opts.input)
+end
 
 if opts.trimmer == "none"
 elsif opts.trimmer == "trimmomatic"
