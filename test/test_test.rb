@@ -42,6 +42,21 @@ class TestPreprocessor < Test::Unit::TestCase
       pre.bbnorm
     end
 
+    should "gunzip files and leave original in place" do
+      left = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq.gz')
+      right = File.join(File.dirname(__FILE__), 'data', 'A-1-2.fq.gz')
+      output = Dir.mktmpdir
+      pre = Preprocessor.new(output, false, 1, 1)
+      pre.load_reads(left, right, "A")
+      pre.gunzip
+      gz1 = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq.gz')
+      gz2 = File.join(File.dirname(__FILE__), 'data', 'A-1-2.fq.gz')
+      assert File.exist?(gz1), "original file 1 exists"
+      assert File.exist?(gz2), "original file 2 exists"
+      assert File.exist?("#{output}/A-1-1.fq"), "gunzipped file 1 exists"
+      assert File.exist?("#{output}/A-1-2.fq"), "gunzipped file 2 exists"
+    end
+
     should 'trim reads using trimmomatic' do
       @pre.trimmomatic
       assert File.exist?("#{@output}/A_1-1.t.fq")
