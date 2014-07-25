@@ -64,15 +64,16 @@ end
 if opts.morehelp
   puts "The input file should contain a line describing each input fastq file"
   puts "Each line should contain four fields separated by commas"
-  puts "   1) Path to the fastq file"
-  puts "   2) What rep this file belongs to (integer)"
-  puts "   3) What type of sample this is (eg cell type or WT/M)"
-  puts "   4) Which pair of paired reads. (integer, either 1 or 2)"
+  puts "   1) Name of experiment"
+  puts "   2) Path to the fastq file"
+  puts "   3) What rep this file belongs to (integer)"
+  puts "   4) What type of sample this is (eg cell type or WT/M)"
+  puts "   5) Which pair of paired reads. (integer, either 1 or 2)"
   puts "eg:"
-  puts "fastq/BS-1-R1.fastq,1,BS,1"
-  puts "fastq/BS-1-R2.fastq,1,BS,2"
-  puts "fastq/M-1-R1.fastq,1,M,1"
-  puts "fastq/M-1-R2.fastq,1,M,2"
+  puts "rice,fastq/BS-1-R1.fastq,1,BS,1"
+  puts "rice,fastq/BS-1-R2.fastq,1,BS,2"
+  puts "rice,fastq/M-1-R1.fastq,1,M,1"
+  puts "rice,fastq/M-1-R2.fastq,1,M,2"
   exit
 end
 
@@ -94,7 +95,7 @@ preprocessor = Preprocessor.new(opts.output, opts.verbose, opts.threads,
                                 opts.memory)
 
 if opts.left and opts.right
-  preprocessor.load_reads(opts.left, opts.right)
+  preprocessor.load_reads(opts.left, opts.right, "output")
 else
   preprocessor.load_input(opts.input)
 end

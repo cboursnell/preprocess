@@ -29,32 +29,32 @@ class Preprocessor
 
   def initialize(output, verbose, threads=1, memory=4)
     @verbose = verbose
-    @output_dir = File.expand_path(output)
     @trim_jar = "bin/trimmomatic-0.32.jar"
     @khmer = which("normalize-by-median.py").first
     @hammer_path = "bin/SPAdes-3.1.0-Linux/bin/spades.py"
+    @output_dir = output ? File.expand_path(output) : Dir.pwd
     @memory = memory
     @threads = threads
     @data = []
-
   end
 
   def load_input(input)
     if File.exist?(input)
       File.open("#{input}").each_line do |line|
         cols = line.chomp.split(",")
-        if cols.size != 4
-          raise MalformedInputError.new("Input file does not contain 4 columns")
+        if cols.size != 5
+          raise MalformedInputError.new("Input file does not contain 5 columns")
         end
         raise RuntimeError.new("#{cols[0]} not found") if !File.exist?(cols[0])
-        if cols[3].to_i != 1 and cols[3].to_i != 2
+        if cols[4].to_i != 1 and cols[4].to_i != 2
           raise RuntimeError.new("Pair should be 1 or 2")
         end
-        @data << { :file => File.expand_path(cols[0]),
-                   :rep => cols[1].to_i,
-                   :type => cols[2],
-                   :pair => cols[3].to_i,
-                   :current => File.expand_path(cols[0]) }
+        @data << { :name => cols[0],
+                   :file => File.expand_path(cols[1]),
+                   :rep => cols[2].to_i,
+                   :type => cols[3],
+                   :pair => cols[4].to_i,
+                   :current => File.expand_path(cols[1]) }
       end
       @paired = @data.reduce(0) {|max,v| max=[max,v[:pair]].max}
     else
@@ -62,20 +62,22 @@ class Preprocessor
     end
   end
 
-  def load_reads(left, right)
+  def load_reads(left, right, name)
     @data = []
     rep = 1
     left.split(",").zip(right.split(",")).each do |a, b|
       # left
-      @data << { :file => File.expand_path(a),
+      @data << { :name => name,
+                 :file => File.expand_path(a),
                  :rep => rep,
-                 :type => "A",
+                 :type => name,
                  :pair => 1,
                  :current => File.expand_path(a) }
       # right
-      @data << { :file => File.expand_path(b),
+      @data << { :name => name,
+                 :file => File.expand_path(b),
                  :rep => rep,
-                 :type => "A",
+                 :type => name,
                  :pair => 2,
                  :current => File.expand_path(b) }
       rep += 1

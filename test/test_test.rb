@@ -36,7 +36,7 @@ class TestPreprocessor < Test::Unit::TestCase
       right = File.join(File.dirname(__FILE__), 'data', 'A-1-2.fq')
       right << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-2.fq')}"
       pre = Preprocessor.new(@output, verbose, threads, memory)
-      pre.load_reads(left, right)
+      pre.load_reads(left, right, "A")
       pre.trimmomatic
       pre.hammer
       pre.bbnorm
