@@ -475,9 +475,11 @@ class Preprocessor
       outfile = "#{left}.keep" # interleaved output of left and right
       if left and right
         # parameters
-        lowthresh=1
-        mindepth=6
-        #
+        lowthresh=1 # Kmers at this and below are always considered errors
+        mindepth=1  # Kmers with depth below this number will not be included
+                    #   when calculating the depth of a read
+        minkmers=15 # Reads must have at least this many kmers over min depth
+                    #   to be retained.
         cmd = "#{bbnorm} in=#{left} in2=#{right} "
         cmd << "out=#{outfile} "
         # cmd << "outt=#{toss} " # not sure if this is necessary
@@ -486,6 +488,7 @@ class Preprocessor
         cmd << "bits=#{bits} "
         cmd << "lowthresh=#{lowthresh} "
         cmd << "mindepth=#{mindepth} "
+        cmd << "minkmers=#{mindepth} "
         cmd << "target=#{target_coverage} "
         cmd << "threads=#{@threads}"
         norm = Cmd.new(cmd)

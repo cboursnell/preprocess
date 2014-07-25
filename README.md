@@ -7,8 +7,9 @@ Caveat: currently only works with paired reads.
 
 # Input
 
-The input is file containing one line per fastq file with 4 fields separated by commas. The 4 columns are:
+The input is file containing one line per fastq file with 4 fields separated by commas. The 5 columns are:
 
+ - Experiment name
  - Filename, preferably absoluate location not relative
  - Repetition. The sample number (Integer)
  - Type. This could be tissue name or cell type etc (String)
@@ -17,14 +18,14 @@ The input is file containing one line per fastq file with 4 fields separated by 
 For example:
 
 ```
-/home/chris/documents/rice/rice_BS_1_1.fq,1,BS,1
-/home/chris/documents/rice/rice_BS_1_2.fq,1,BS,2
-/home/chris/documents/rice/rice_BS_2_1.fq,2,BS,1
-/home/chris/documents/rice/rice_BS_2_2.fq,2,BS,2
-/home/chris/documents/rice/rice_M_1_1.fq,1,M,1
-/home/chris/documents/rice/rice_M_1_2.fq,1,M,2
-/home/chris/documents/rice/rice_M_2_1.fq,2,M,1
-/home/chris/documents/rice/rice_M_2_2.fq,2,M,2
+rice,/home/chris/documents/rice/rice_BS_1_1.fq,1,BS,1
+rice,/home/chris/documents/rice/rice_BS_1_2.fq,1,BS,2
+rice,/home/chris/documents/rice/rice_BS_2_1.fq,2,BS,1
+rice,/home/chris/documents/rice/rice_BS_2_2.fq,2,BS,2
+rice,/home/chris/documents/rice/rice_M_1_1.fq,1,M,1
+rice,/home/chris/documents/rice/rice_M_1_2.fq,1,M,2
+rice,/home/chris/documents/rice/rice_M_2_1.fq,2,M,1
+rice,/home/chris/documents/rice/rice_M_2_2.fq,2,M,2
 ```
 
 Currently only paired reads are supported.
@@ -33,13 +34,13 @@ Currently only paired reads are supported.
 
 From the command line
 
-```
+```bash
 preprocess --input <input> --output <output> --threads <t> --memory <m>
 ```
 
 for example:
 
-```
+```bash
 preprocess --input data --output ~/rice/output --threads 8 --memory 20 --verbose
 ```
 
@@ -50,26 +51,51 @@ preprocess --input data --output ~/rice/output --threads 8 --memory 20 --verbose
  - Khmer (normalise-by-median.py)
  - SPAdes (automatically downloaded if not already installed)
  - trimmomatic (jar file included included)
+ - bbmap (automatically downloaded if not already installed)
+
+# Installation of Ruby
+
+We recommend using the RVM to install Ruby.
+
+Just run this to install the latest version of the RVM and Ruby
+
+```bash
+\curl -sSL https://get.rvm.io | bash -s stable --ruby
+```
+
+Then to install Preprocessor
+
+```
+gem install preprocessor
+```
+
 
 # Installation of Khmer
 
-First get the python development libraries and pip
+If you choose to use Khmer for digital normalisation you can install it using the python package manager pip. First get the python development libraries and pip
 
-```
+```bash
 sudo apt-get install python2.7-dev python-virtualenv python-pip gcc
 ```
 
 Then
 
-```
+```bash
 pip install khmer
 ```
+This might have to be run using `sudo`
 
 # Installation of SPAdes
 
-Download the compiled binaries
+If you choose to use BayesHammer for read error correction it is included in the SPAdes assembler. The compiled binaries can be downloaded:
+
+```bash
+wget http://spades.bioinf.spbau.ru/release3.1.0/SPAdes-3.1.0-Linux.tar.gz
+tar -xzf SPAdes-3.1.0-Linux.tar.gz
+```
+
+# Installation of bbmap
 
 ```
-wget http://spades.bioinf.spbau.ru/release3.0.0/SPAdes-3.0.0-Linux.tar.gz
-tar -xzf SPAdes-3.0.0-Linux.tar.gz
+wget
 ```

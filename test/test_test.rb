@@ -59,8 +59,8 @@ class TestPreprocessor < Test::Unit::TestCase
 
     should 'trim reads using trimmomatic' do
       @pre.trimmomatic
-      assert File.exist?("#{@output}/A_1-1.t.fq")
-      assert File.exist?("#{@output}/A_1-2.t.fq")
+      assert File.exist?("#{@output}/A_1-1.t.fq"), "file doesn't exist"
+      assert File.exist?("#{@output}/A_1-2.t.fq"), "file doesn't exist"
       @pre.data.each do |hash|
         assert hash[:current]
         assert hash[:unpaired]

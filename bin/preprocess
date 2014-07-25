@@ -3,15 +3,17 @@
 ## # # # # # # # # # # # # #
 ## mrna pipeline
 ##
-## trimmomatic
-## bayeshammer (optional)
-## khmer
+## can run any of these
+##   trimmomatic
+##   bayeshammer
+##   khmer
+##   bbnorm
+##   more to come!
 ##
 ## created: 2014-05-27 Chris Boursnell (cmb211@cam.ac.uk)
 ##
 ## # # # # # # # # # # # # #
 
-#require 'rubygems'
 require 'trollop'
 require 'preprocessor'
 
@@ -104,7 +106,7 @@ preprocessor.gunzip
 
 if opts.trimmer == "none"
 elsif opts.trimmer == "trimmomatic"
-  preprocessor.trim(opts.minlen, 4, 15, 15, 15, 2)
+  preprocessor.trimmomatic(opts.minlen, 4, 15, 15, 15, 2)
 else
   raise RuntimeError.new("#{opts.trimer} is not a valid input to trimmer")
 end

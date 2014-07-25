@@ -15,6 +15,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'which', '~> 0.0', '>= 0.0.2'
   gem.add_dependency 'bio', '~> 1.4', '>= 1.4.3'
   gem.add_dependency 'bindeps', '~> 0.0', '>= 0.0.7'
+  gem.add_dependency 'trollop', '~> 2.0', '>= 2.0'
 
   gem.add_development_dependency 'rake', '~> 10.3', '>= 10.3.2'
   gem.add_development_dependency 'turn', '~> 0.9', '>= 0.9.7'
