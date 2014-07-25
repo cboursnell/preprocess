@@ -83,8 +83,27 @@ class Preprocessor
     @paired = 2
   end
 
+  def gunzip
+    @data.each do |info|
+      if info[:file]=~/\.gz$/
+        output_filename = File.basename(info[:file].split(".gz").first)
+        output_filename = File.join(@output_dir, output_filename)
+        File.open("#{output_filename}", "wb") do |out|
+          Zlib::GzipReader.open(info[:file]) do |gz|
+            out.write(gz.read)
+          end
+        end
+        info[:current] = output_filename
+      end
+    end
+  end
+
+  def set_output(output_dir)
+    @output_dir = File.expand_path(output_dir)
+  end
+
   def detect_phred
-    file = File.open(@data[0][:file])
+    file = File.open(@data[0][:current])
     c = 0
     scores={}
     while c < 400

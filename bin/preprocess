@@ -22,9 +22,9 @@ opts = Trollop::options do
 
   author: Chris Boursnell (cmb211@cam.ac.uk)
   EOS
-  opt :left, "Comma separated list of fastq files",
+  opt :left, "Comma separated list of fastq files (can be gzipped)",
       :type => String
-  opt :right, "Comma separated list of fastq files",
+  opt :right, "Comma separated list of fastq files (can be gzipped)",
       :type => String
   opt :input, "Input file describing fastq files. Ignored if left and right specified",
       :type => String
@@ -98,6 +98,8 @@ if opts.left and opts.right
 else
   preprocessor.load_input(opts.input)
 end
+
+preprocessor.gunzip
 
 if opts.trimmer == "none"
 elsif opts.trimmer == "trimmomatic"
