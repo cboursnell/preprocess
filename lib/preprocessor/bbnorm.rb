@@ -33,16 +33,12 @@ module Preprocessor
       cmd = "wget http://kent.dl.sourceforge.net/project/bbmap/"
       cmd << "BBMap_33.08_java7.tar.gz -O #{dl}"
       wget = Cmd.new(cmd)
-      puts wget.cmd
       wget.run
-      puts wget.stdout
       if wget.status.success?
         cmd = "tar xzf #{dl} --directory "
         cmd << "#{@gem_dir}/bin"
         untar = Cmd.new(cmd)
         untar.run
-        puts untar.stdout
-        puts untar.cmd
         if !untar.status.success?
           raise RuntimeError.new("untar failed")
         end
@@ -87,7 +83,6 @@ module Preprocessor
     end
 
     def deinterleave(file, output_left, output_right)
-      #puts "deinterleaving #{file} to make #{output_left} and #{output_right}"
       raise RuntimeError.new("Can't find #{file}") if !File.exist?(file)
       fastq = File.open(file)
       left = File.open("#{output_left}", "w")

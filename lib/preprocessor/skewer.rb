@@ -9,6 +9,7 @@ module Preprocessor
       @end_quality = end_quality
       @mean_quality = mean_quality
       @min_length = min_length
+      @filter = true
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'skewer.yaml')
       Bindeps.require gem_deps

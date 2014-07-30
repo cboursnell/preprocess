@@ -33,6 +33,7 @@ module Preprocessor
       @filter = "http://zenodo.org/record/11091/files/rRNAplants.fa"
       @khmer = which("normalize-by-median.py").first
       @output_dir = output ? File.expand_path(output) : Dir.pwd
+      Dir.mkdir(@output_dir) unless Dir.exist?(@output_dir)
       @memory = memory
       @threads = threads
       @data = []
@@ -160,7 +161,7 @@ module Preprocessor
       end
     end
 
-    def norm
+    def cbnorm # yet to be implemented
 
     end
 

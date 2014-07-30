@@ -100,6 +100,7 @@ module Preprocessor
         cmd << " -r #{bloom}"
         cmd << " -q #{right[:current]}"
         cmd << " -t #{@threshold}"
+        cmd << " -k #{@k}" if @k
         cmd << " -o #{@outdir}/"
         output_file = "#{@outdir}/"
         output_file << "#{File.basename(right[:current]).split(".").first}"

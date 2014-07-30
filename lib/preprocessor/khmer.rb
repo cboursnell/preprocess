@@ -13,10 +13,7 @@ module Preprocessor
       @kmer = kmer
       @cutoff = cutoff
       @tables = tables
-      puts @memory
-      puts @tables
       @min_table_size = ((@memory/@tables)*1e9).to_i
-      puts @min_table_size
       @khmer = which("normalize-by-median.py").first
       if @khmer.empty?
         raise RuntimeError.new("khmer not installed")
@@ -50,7 +47,6 @@ module Preprocessor
       cmd << " --n_tables #{@tables}  --min-tablesize #{@min_table_size} "
       cmd << " --fault-tolerant --out #{@paired_outfile} "
       cmd << "#{paired_file_list}"
-      puts cmd
       khmer_cmd = Cmd.new(cmd)
       khmer_cmd.run
       # unpaired
@@ -60,7 +56,6 @@ module Preprocessor
         cmd << " --n_tables #{@tables}  --min-tablesize #{@min_table_size} "
         cmd << " --fault-tolerant --out #{@single_outfile} "
         cmd << "#{single_file_list}"
-        puts cmd
         khmer_cmd = Cmd.new(cmd)
         khmer_cmd.run
       end
@@ -99,7 +94,6 @@ module Preprocessor
     end
 
     def deinterleave(file, output_left, output_right)
-      #puts "deinterleaving #{file} to make #{output_left} and #{output_right}"
       raise RuntimeError.new("Can't find #{file}") if !File.exist?(file)
       fastq = File.open(file)
       left = File.open("#{output_left}", "w")

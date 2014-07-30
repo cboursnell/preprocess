@@ -21,8 +21,20 @@ class TestPreprocessor < Test::Unit::TestCase
       # delete output folder
       cmd = "rm -rf #{@output}"
       `#{cmd}`
-      # bindir = File.join(ENV['GEM_HOME'], 'bin')
-      # cmd = "rm #{bindir}/trimmomatic-0.32.jar"
+      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+      bindir = File.join(gem_dir, "bin")
+      cmd = "rm #{bindir}/trimmomatic-0.32.jar"
+      `#{cmd}` if File.exist?(File.join(bindir, "trimmomatic-0.32.jar"))
+      cmd = "rm #{bindir}/facs"
+      `#{cmd}` if File.exist?(File.join(bindir, "facs"))
+      cmd = "rm -rf #{bindir}/bbmap"
+      `#{cmd}` if Dir.exist?(File.join(bindir, "bbmap"))
+      cmd = "rm #{bindir}/bbmap.tar.gz"
+      `#{cmd}` if File.exist?(File.join(bindir, "bbmap.tar.gz"))
+      cmd = "rm -rf #{bindir}/SPAdes-3.1.0-Linux"
+      `#{cmd}` if Dir.exist?(File.join(bindir, "SPAdes-3.1.0-Linux"))
+      cmd = "rm #{bindir}/spades.tar.gz"
+      `#{cmd}` if File.exist?(File.join(bindir, "spades.tar.gz"))
     end
 
     should 'setup should run ok' do
@@ -77,7 +89,7 @@ class TestPreprocessor < Test::Unit::TestCase
       left << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-1.fq')}"
       right = File.join(File.dirname(__FILE__), 'data', 'A-1-2.fq')
       right << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-2.fq')}"
-      pre = Preprocessor.new(@output, verbose, threads, memory)
+      pre = Preprocessor::Preprocessor.new(@output, verbose, threads, memory)
       pre.load_reads(left, right, "A")
       pre.trimmomatic
       pre.hammer
@@ -97,6 +109,8 @@ class TestPreprocessor < Test::Unit::TestCase
       assert File.exist?(gz2), "original file 2 exists"
       assert File.exist?("#{output}/A-1-1.fq"), "gunzipped file 1 exists"
       assert File.exist?("#{output}/A-1-2.fq"), "gunzipped file 2 exists"
+      assert_equal "#{output}/A-1-1.fq", pre.data[0][:current]
+      assert_equal "#{output}/A-1-2.fq", pre.data[1][:current]
     end
 
     should 'normalise trimmed reads with khmer' do
@@ -109,31 +123,33 @@ class TestPreprocessor < Test::Unit::TestCase
 
     should 'hammer reads' do
       @pre.hammer
-      f = "#{@output}/hammer-test-A-1/corrected/A-1-1.00.0_0.cor.fastq"
-      assert File.exist?(f), "1 left"
-      f = "#{@output}/hammer-test-A-1/corrected/A-1-2.00.0_0.cor.fastq"
-      assert File.exist?(f), "1 right"
-      f = "#{@output}/hammer-test-A-1/left_unpaired.fq"
-      assert File.exist?(f), "1 unpaired"
-      f = "#{@output}/hammer-test-A-2/corrected/A-2-1.00.0_0.cor.fastq"
-      assert File.exist?(f), "2 left"
-      f = "#{@output}/hammer-test-A-2/corrected/A-2-2.00.0_0.cor.fastq"
-      assert File.exist?(f), "2 right"
-      f = "#{@output}/hammer-test-A-2/left_unpaired.fq"
-      assert File.exist?(f), "2 unpaired"
+      files = []
+      files << "#{@output}/hammer-test-A-1/corrected/A-1-1.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-1/corrected/A-1-2.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-1/left_unpaired.fq"
+      files << "#{@output}/hammer-test-A-2/corrected/A-2-1.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-2/corrected/A-2-2.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-2/left_unpaired.fq"
+      files.each do |f|
+        assert File.exist?(f), "file #{f} not found"
+      end
     end
 
     should 'hammer trimmed reads' do
       @pre.trimmomatic
       @pre.hammer
-      assert File.exist?("#{@output}/hammer-test-A-1/corrected/A_1-1.t.00.0_0.cor.fastq")
-      assert File.exist?("#{@output}/hammer-test-A-1/corrected/A_1-2.t.00.0_0.cor.fastq")
-      assert File.exist?("#{@output}/hammer-test-A-1/left_unpaired.fq")
-      assert File.exist?("#{@output}/hammer-test-A-1/right_unpaired.fq")
-      assert File.exist?("#{@output}/hammer-test-A-2/corrected/A_2-1.t.00.0_0.cor.fastq")
-      assert File.exist?("#{@output}/hammer-test-A-2/corrected/A_2-2.t.00.0_0.cor.fastq")
-      assert File.exist?("#{@output}/hammer-test-A-2/left_unpaired.fq")
-      assert File.exist?("#{@output}/hammer-test-A-2/right_unpaired.fq")
+      files = []
+      files << "#{@output}/hammer-test-A-1/corrected/A_1-1.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-1/corrected/A_1-2.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-1/left_unpaired.fq"
+      files << "#{@output}/hammer-test-A-1/right_unpaired.fq"
+      files << "#{@output}/hammer-test-A-2/corrected/A_2-1.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-2/corrected/A_2-2.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-2/left_unpaired.fq"
+      files << "#{@output}/hammer-test-A-2/right_unpaired.fq"
+      files.each do |f|
+        assert File.exist?(f), "file #{f} not found"
+      end
     end
 
     should 'run bbnorm' do
@@ -182,8 +198,8 @@ class TestPreprocessor < Test::Unit::TestCase
       assert @pre.data[0][:current] == files[1], "data is correct"
     end
 
-    # should 'run my normaliser' do
-    #   @pre.norm
-    # end
+    should 'run my normaliser' do
+      @pre.norm
+    end
   end
 end

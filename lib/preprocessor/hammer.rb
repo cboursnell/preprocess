@@ -22,14 +22,14 @@ module Preprocessor
         download = Cmd.new(wget_cmd)
         download.run
         if download.status.success?
-          puts download.cmd
-          puts download.stdout
+          # puts download.cmd
+          # puts download.stdout
 
           unpack = Cmd.new(tar_cmd)
           unpack.run
           if unpack.status.success?
-            puts unpack.cmd
-            puts unpack.stdout
+            # puts unpack.cmd
+            # puts unpack.stdout
           end
         else
           puts download.stdout
