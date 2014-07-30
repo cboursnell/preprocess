@@ -153,6 +153,35 @@ class TestPreprocessor < Test::Unit::TestCase
       assert File.exist?("#{@output}/test-A-2-2.bbnorm.fq")
     end
 
+    should 'filter reads with facs' do
+      @pre.facs
+      files = []
+      files << "#{@output}/rRNAplants.fa.bloom"
+      files << "#{@output}/A-1-1_rRNAplants.fa_clean.fastq"
+      files << "#{@output}/A-1-2_rRNAplants.fa_clean.fastq"
+      files << "#{@output}/A-2-1_rRNAplants.fa_clean.fastq"
+      files << "#{@output}/A-2-2_rRNAplants.fa_clean.fastq"
+      files.each do |f|
+        assert File.exist?(f), "file #{f} not found"
+      end
+      assert @pre.data[0][:current] == files[1], "data is correct"
+    end
+
+    should 'filter reads with facs and specified file' do
+      file = File.join(File.dirname(__FILE__), 'data', 'filter.fasta')
+      @pre.facs(file)
+      files = []
+      files << "#{@output}/filter.fasta.bloom"
+      files << "#{@output}/A-1-1_filter.fasta_clean.fastq"
+      files << "#{@output}/A-1-2_filter.fasta_clean.fastq"
+      files << "#{@output}/A-2-1_filter.fasta_clean.fastq"
+      files << "#{@output}/A-2-2_filter.fasta_clean.fastq"
+      files.each do |f|
+        assert File.exist?(f), "file #{f} not found"
+      end
+      assert @pre.data[0][:current] == files[1], "data is correct"
+    end
+
     # should 'run my normaliser' do
     #   @pre.norm
     # end

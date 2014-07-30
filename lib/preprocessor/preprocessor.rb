@@ -30,6 +30,7 @@ module Preprocessor
 
     def initialize(output, verbose, threads=1, memory=4)
       @verbose = verbose
+      @filter = "http://zenodo.org/record/11091/files/rRNAplants.fa"
       @khmer = which("normalize-by-median.py").first
       @output_dir = output ? File.expand_path(output) : Dir.pwd
       @memory = memory
@@ -146,6 +147,16 @@ module Preprocessor
               k, target_coverage, bits, tables, lowthresh, mindepth, minkmers)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         normalizer.run(left, right)
+      end
+    end
+
+    def facs(filter=nil, k=nil, false_positive=0.005, threshold=0.4)
+      filter = @filter unless filter
+      filterer = Facs.new(@output_dir, @threads, @memory, filter,
+                          k, false_positive, threshold)
+
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        filterer.run(left, right)
       end
     end
 
