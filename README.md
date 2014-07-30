@@ -47,15 +47,18 @@ preprocess --input data --output ~/rice/output --threads 8 --memory 20 --verbose
 # Dependencies
 
  - Ruby (at least version 2.0.0)
- - Java (at least -version 1.7.0_55)
+ - Java (at least version 1.7.0_55)
  - Khmer (normalise-by-median.py)
  - SPAdes (automatically downloaded if not already installed)
- - trimmomatic (jar file included included)
+ - trimmomatic (jar file (automatically downloaded)
  - bbmap (automatically downloaded if not already installed)
+ - skewer (automatically downloaded if not already installed)
+ - facs (automatically downloaded if not already installed)
+
 
 # Installation of Ruby
 
-We recommend using the RVM to install Ruby.
+We recommend using the RVM to install Ruby. Installing with `sudo` can cause problems with certain gems.
 
 Just run this to install the latest version of the RVM and Ruby
 
@@ -87,6 +90,8 @@ This might have to be run using `sudo`
 
 # Installation of SPAdes
 
+BayesHammer is automatically installed when the program is run.
+
 If you choose to use BayesHammer for read error correction it is included in the SPAdes assembler. The compiled binaries can be downloaded:
 
 ```bash
@@ -94,8 +99,14 @@ wget http://spades.bioinf.spbau.ru/release3.1.0/SPAdes-3.1.0-Linux.tar.gz
 tar -xzf SPAdes-3.1.0-Linux.tar.gz
 ```
 
-# Installation of bbmap
+# Installation of BBMap
 
-```
-wget
-```
+bbmap is automatically installed when the program is run.
+
+# Installation of facs
+
+facs is automatically installed when the program is run.
+
+# Installation of skewer
+
+skewer is automatically installed when the program is run.
