@@ -3,16 +3,20 @@
 ## # # # # # # # # # # # # #
 ## mrna pipeline
 ##
-## trimmomatic
-## bayeshammer (optional)
-## khmer
+## can run any of these
+##   facs
+##   trimmomatic
+##   skewer
+##   bayeshammer
+##   khmer
+##   bbnorm
+##   more to come!
 ##
 ## created: 2014-05-27 Chris Boursnell (cmb211@cam.ac.uk)
 ##
 ## # # # # # # # # # # # # #
 
 require 'rubygems'
-#require 'preprocessor'
 require 'set'
 require 'json'
 require 'which'
@@ -92,7 +96,7 @@ module Preprocessor
 
     def gunzip
       @data.each do |info|
-        if info[:file]=~/\.gz$/
+        if info[:current]=~/\.gz$/
           output_filename = File.basename(info[:file].split(".gz").first)
           output_filename = File.join(@output_dir, output_filename)
           File.open("#{output_filename}", "wb") do |out|
@@ -192,11 +196,14 @@ module Preprocessor
     def get_output
       left_set = Set.new
       right_set = Set.new
+      single_set = Set.new
       @data.each_with_index.each_slice(2) do |(a,i), (b,j)|
-        left_set << @data[i][:current]
-        right_set << @data[j][:current]
+        left_set << a[:current]
+        right_set << b[:current]
+        single_set << a[:unpaired] if a[:unpaired]
+        single_set << b[:unpaired] if b[:unpaired]
       end
-      [left_set.to_a, right_set.to_a]
+      [left_set.to_a, right_set.to_a, single_set.to_a]
     end
 
   end

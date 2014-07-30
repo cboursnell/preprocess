@@ -18,7 +18,8 @@ module Preprocessor
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'trimmomatic.yaml')
       Bindeps.require gem_deps
-      @path = File.join(ENV['GEM_HOME'], 'bin', 'trimmomatic-0.32.jar')
+      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+      @path = File.join(gem_dir, 'bin', 'trimmomatic-0.32.jar')
     end
 
     def run left, right=nil
