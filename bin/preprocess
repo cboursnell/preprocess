@@ -5,6 +5,7 @@
 ##
 ## can run any of these
 ##   trimmomatic
+##   skewer
 ##   bayeshammer
 ##   khmer
 ##   bbnorm
@@ -42,9 +43,9 @@ opts = Trollop::options do
   opt :memory, "Memory to use in GB",
       :default => 4,
       :type => :int
-  opt :filter, "Which filter program to use (none|facs)",
-      :default => "facs",
-      :type => String
+  # opt :filter, "Which filter program to use (none|facs)",
+  #     :default => "facs",
+  #     :type => String
   opt :trimmer, "Which trimming program to use (none|trimmomatic|skewer)",
       :default => "trimmomatic",
       :type => String
@@ -113,12 +114,12 @@ end
 
 preprocessor.gunzip
 
-if opts.filter == "none"
-elsif opts.filter == "facs"
-  preprocessor.facs(opts.filter_fasta)
-else
-  raise RuntimeError.new("#{opts.trimer} is not a valid input to filter")
-end
+# if opts.filter == "none"
+# elsif opts.filter == "facs"
+#   preprocessor.facs(opts.filter_fasta)
+# else
+#   raise RuntimeError.new("#{opts.trimer} is not a valid input to filter")
+# end
 
 if opts.trimmer == "none"
 elsif opts.trimmer == "trimmomatic"
