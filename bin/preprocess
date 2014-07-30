@@ -16,6 +16,7 @@
 
 require 'trollop'
 require 'preprocessor'
+require 'set'
 
 opts = Trollop::options do
   version "v0.3"
@@ -28,6 +29,9 @@ opts = Trollop::options do
       :type => String
   opt :right, "Comma separated list of fastq files (can be gzipped)",
       :type => String
+  opt :name, "Name prefix for output files (not used if input is used)",
+      :type => String,
+      :default => "output"
   opt :input, "Input file describing fastq files. Ignored if left and right specified",
       :type => String
   opt :output, "Directory where output files go",
@@ -38,7 +42,10 @@ opts = Trollop::options do
   opt :memory, "Memory to use in GB",
       :default => 4,
       :type => :int
-  opt :trimmer, "Which trimming program to use (none|trimmomatic)",
+  opt :filter, "Which filter program to use (none|facs)",
+      :default => "facs",
+      :type => String
+  opt :trimmer, "Which trimming program to use (none|trimmomatic|skewer)",
       :default => "trimmomatic",
       :type => String
   opt :correction, "Which read error correction program to use (none|hammer)",
@@ -46,6 +53,8 @@ opts = Trollop::options do
       :type => String
   opt :normalise, "Which digital normalisation program to run (none|khmer|bbnorm)",
       :default => "bbnorm",
+      :type => String
+  opt :filter_fasta, "A fasta file of sequences to filter against",
       :type => String
   opt :minlen, "The minimum length for trimmed sequences",
       :default => 40,
@@ -91,22 +100,31 @@ else
   Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
 end
 Trollop::die "Must specify output" if !opts.output
-Trollop::die :output, "must exist" if !Dir.exist?(opts.output) if opts.output
+Trollop::die :output, "mustn't exist" if Dir.exist?(opts.output)
 
-preprocessor = Preprocessor.new(opts.output, opts.verbose, opts.threads,
-                                opts.memory)
+preprocessor = Preprocessor::Preprocessor.new(opts.output, opts.verbose,
+                                                 opts.threads, opts.memory)
 
 if opts.left and opts.right
-  preprocessor.load_reads(opts.left, opts.right, "output")
+  preprocessor.load_reads(opts.left, opts.right, opts.name)
 else
   preprocessor.load_input(opts.input)
 end
 
 preprocessor.gunzip
 
+if opts.filter == "none"
+elsif opts.filter == "facs"
+  preprocessor.facs(opts.filter_fasta)
+else
+  raise RuntimeError.new("#{opts.trimer} is not a valid input to filter")
+end
+
 if opts.trimmer == "none"
 elsif opts.trimmer == "trimmomatic"
   preprocessor.trimmomatic(opts.minlen, 4, 15, 15, 15, 2)
+elsif opts.trimmer == "skewer"
+  preprocessor.skewer(25, 0, opts.minlen)
 else
   raise RuntimeError.new("#{opts.trimer} is not a valid input to trimmer")
 end
@@ -125,4 +143,14 @@ elsif opts.normalise == "khmer"
   preprocessor.khmer(opts.kmer, opts.cutoff, opts.tables)
 else
   raise RuntimeError.new("#{opts.normalise} is not a valid input to normalise")
+end
+
+set = Set.new
+preprocessor.data.each do |hash|
+  set << hash[:current]
+  set << hash[:unpaired] if hash[:unpaired].length > 0 if hash[:unpaired]
+end
+puts "Final output files:"
+set.each do |file|
+  puts "  #{file}"
 end
