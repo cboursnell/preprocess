@@ -49,6 +49,10 @@ module Preprocessor
       cmd << "#{paired_file_list}"
       khmer_cmd = Cmd.new(cmd)
       khmer_cmd.run
+      if !khmer_cmd.status.success?
+        msg = "khmer failed to run on paired reads\n#{khmer_cmd.stderr}"
+        raise RuntimeError.new(msg)
+      end
       # unpaired
       if single_file_list.length > 1
         cmd = "#{@khmer} --quiet "
@@ -58,6 +62,10 @@ module Preprocessor
         cmd << "#{single_file_list}"
         khmer_cmd = Cmd.new(cmd)
         khmer_cmd.run
+      if !khmer_cmd.status.success?
+        msg = "khmer failed to run on single reads\n#{khmer_cmd.stderr}"
+        raise RuntimeError.new(msg)
+      end
       end
       left_outfile = File.join(@outdir, "#{paired_name}-left.fq")
       right_outfile = File.join(@outdir, "#{paired_name}-right.fq")
