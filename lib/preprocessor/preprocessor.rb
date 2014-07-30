@@ -14,6 +14,7 @@
 require 'rubygems'
 #require 'preprocessor'
 require 'set'
+require 'json'
 require 'which'
 require 'bindeps'
 include Which
@@ -55,7 +56,8 @@ module Preprocessor
                      :rep => cols[2].to_i,
                      :type => cols[3],
                      :pair => cols[4].to_i,
-                     :current => File.expand_path(cols[1]) }
+                     :current => File.expand_path(cols[1]),
+                     :processed => [] }
         end
         @paired = @data.reduce(0) {|max,v| max=[max,v[:pair]].max}
       else
@@ -73,14 +75,16 @@ module Preprocessor
                    :rep => rep,
                    :type => name,
                    :pair => 1,
-                   :current => File.expand_path(a) }
+                   :current => File.expand_path(a),
+                   :processed => [] }
         # right
         @data << { :name => name,
                    :file => File.expand_path(b),
                    :rep => rep,
                    :type => name,
                    :pair => 2,
-                   :current => File.expand_path(b) }
+                   :current => File.expand_path(b),
+                   :processed => [] }
         rep += 1
       end
       @paired = 2
@@ -97,8 +101,10 @@ module Preprocessor
             end
           end
           info[:current] = output_filename
+          info[:processed] << "gunzip"
         end
       end
+      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
     end
 
     def set_output(output_dir)
@@ -112,8 +118,10 @@ module Preprocessor
 
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         trimmer.run(left, right)
+        left[:processed] << "trimmomatic"
+        right[:processed] << "trimmomatic"
       end
-
+      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
     end
 
     def skewer(end_quality=25, mean_quality=0, min_length=40)
@@ -121,15 +129,20 @@ module Preprocessor
                            mean_quality, min_length)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         trimmer.run(left, right)
+        left[:processed] << "skewer"
+        right[:processed] << "skewer"
       end
-
+      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
     end
 
     def hammer
       correcter = Hammer.new(@output_dir, @threads, @memory)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         correcter.run(left, right)
+        left[:processed] << "bayeshammer"
+        right[:processed] << "bayeshammer"
       end
+      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
     end
 
     def khmer(kmer=23, cutoff=20, tables=4)
@@ -140,6 +153,10 @@ module Preprocessor
         normalizer.interleave(left, right)
       end
       @data = normalizer.normalize
+      @data.each do |file|
+        file[:processed] << "khmer"
+      end
+      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
     end
 
     def bbnorm(k=31, target_coverage=20, bits=8, tables=3,
@@ -148,7 +165,11 @@ module Preprocessor
               k, target_coverage, bits, tables, lowthresh, mindepth, minkmers)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         normalizer.run(left, right)
+        left[:processed] << "bbnorm"
+        right[:processed] << "bbnorm"
+
       end
+      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
     end
 
     def facs(filter=nil, k=nil, false_positive=0.005, threshold=0.4)
@@ -158,7 +179,10 @@ module Preprocessor
 
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         filterer.run(left, right)
+        left[:processed] << "facs"
+        right[:processed] << "facs"
       end
+      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
     end
 
     def cbnorm # yet to be implemented

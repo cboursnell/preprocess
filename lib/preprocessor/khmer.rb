@@ -73,10 +73,12 @@ module Preprocessor
       new_data = []
       new_data << {:current => left_outfile, :unpaired => @single_outfile,
                    :name => @hashes[0][0][:name],
-                   :type => @hashes[0][0][:type], :rep => 1, :pair => 1}
+                   :type => @hashes[0][0][:type], :rep => 1, :pair => 1,
+                   :processed => @hashes[0][0][:processed]}
       new_data << {:current => right_outfile, :unpaired => nil,
-                   :name => @hashes[0][0][:name],
-                   :type => @hashes[0][0][:type], :rep => 1, :pair => 2}
+                   :name => @hashes[0][1][:name],
+                   :type => @hashes[0][1][:type], :rep => 1, :pair => 2,
+                   :processed => @hashes[0][1][:processed]}
       return new_data
     end
 
