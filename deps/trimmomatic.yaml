@@ -1,0 +1,16 @@
+trimmomatic:
+  binaries:
+    - trimmomatic-0.32.jar
+  version:
+    number: '0.32'
+    command: 'echo trimmomatic-0.32.jar'
+  url:
+    64bit:
+      macosx: http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.32.zip
+      linux: http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.32.zip
+      unix: http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.32.zip
+    32bit:
+      macosx: http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.32.zip
+      linux: http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.32.zip
+      unix: http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.32.zip
+  unpack: true

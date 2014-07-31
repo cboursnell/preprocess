@@ -1,0 +1,12 @@
+bbmap:
+  binaries:
+    - bbmap.sh
+    - bbnorm.sh
+    - calcmem.sh
+  version:
+    number: 'BBMap v33.x'
+    command: 'bbmap.sh'
+  url:
+    64bit:
+      linux: http://kent.dl.sourceforge.net/project/bbmap/BBMap_33.08_java7.tar.gz
+  unpack: true

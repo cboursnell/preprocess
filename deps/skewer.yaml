@@ -1,0 +1,10 @@
+skewer:
+  binaries:
+    - skewer-0.1.117-linux-x86_64
+  version:
+    number: '0.1.117'
+    command: 'skewer-0.1.117-linux-x86_64 --help'
+  url:
+    64bit:
+      linux: http://kent.dl.sourceforge.net/project/skewer/Binaries/skewer-0.1.117-linux-x86_64
+  unpack: false
