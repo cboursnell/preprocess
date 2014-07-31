@@ -30,8 +30,7 @@ module Preprocessor
 
   class Preprocessor
 
-    attr_accessor :input, :output, :phred
-    attr_reader :data
+    attr_accessor :input, :output, :phred, :data
 
     def initialize(output, verbose, threads=1, memory=4)
       @verbose = verbose
@@ -49,9 +48,13 @@ module Preprocessor
         File.open("#{input}").each_line do |line|
           cols = line.chomp.split(",")
           if cols.size != 5
-            raise MalformedInputError.new("Input file does not contain 5 columns")
+            msg = "Input file does not contain 5 columns\n"
+            msg << "Please refer to documentation or use --morehelp option"
+            raise MalformedInputError.new(msg)
           end
-          raise RuntimeError.new("#{cols[0]} not found") if !File.exist?(cols[0])
+          if !File.exist?(cols[0])
+            raise RuntimeError.new("#{cols[0]} not found")
+          end
           if cols[4].to_i != 1 and cols[4].to_i != 2
             raise RuntimeError.new("Pair should be 1 or 2")
           end
@@ -61,7 +64,7 @@ module Preprocessor
                      :type => cols[3],
                      :pair => cols[4].to_i,
                      :current => File.expand_path(cols[1]),
-                     :processed => [] }
+                     :processed => {} }
         end
         @paired = @data.reduce(0) {|max,v| max=[max,v[:pair]].max}
       else
@@ -80,7 +83,7 @@ module Preprocessor
                    :type => name,
                    :pair => 1,
                    :current => File.expand_path(a),
-                   :processed => [] }
+                   :processed => {} }
         # right
         @data << { :name => name,
                    :file => File.expand_path(b),
@@ -88,7 +91,7 @@ module Preprocessor
                    :type => name,
                    :pair => 2,
                    :current => File.expand_path(b),
-                   :processed => [] }
+                   :processed => {} }
         rep += 1
       end
       @paired = 2
@@ -97,18 +100,20 @@ module Preprocessor
     def gunzip
       @data.each do |info|
         if info[:current]=~/\.gz$/
-          output_filename = File.basename(info[:file].split(".gz").first)
+          output_filename = File.basename(info[:current].split(".gz").first)
           output_filename = File.join(@output_dir, output_filename)
           File.open("#{output_filename}", "wb") do |out|
-            Zlib::GzipReader.open(info[:file]) do |gz|
+            Zlib::GzipReader.open(info[:current]) do |gz|
               out.write(gz.read)
             end
           end
           info[:current] = output_filename
-          info[:processed] << "gunzip"
+          info[:processed][:unzip] = "gunzip"
         end
       end
-      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
+      File.open("#{@output_dir}/log", "wb")  do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
     end
 
     def set_output(output_dir)
@@ -122,10 +127,12 @@ module Preprocessor
 
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         trimmer.run(left, right)
-        left[:processed] << "trimmomatic"
-        right[:processed] << "trimmomatic"
+        left[:processed][:trim] = "trimmomatic"
+        right[:processed][:trim] = "trimmomatic"
       end
-      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
     end
 
     def skewer(end_quality=25, mean_quality=0, min_length=40)
@@ -133,47 +140,55 @@ module Preprocessor
                            mean_quality, min_length)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         trimmer.run(left, right)
-        left[:processed] << "skewer"
-        right[:processed] << "skewer"
+        left[:processed][:trim] = "skewer"
+        right[:processed][:trim] = "skewer"
       end
-      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
     end
 
     def hammer
       correcter = Hammer.new(@output_dir, @threads, @memory)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         correcter.run(left, right)
-        left[:processed] << "bayeshammer"
-        right[:processed] << "bayeshammer"
+        left[:processed][:correction] = "bayeshammer"
+        right[:processed][:correction] = "bayeshammer"
       end
-      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
     end
 
     def khmer(kmer=23, cutoff=20, tables=4)
       # check that khmer is installed
-      normalizer = Khmer.new(@output_dir, @threads, @memory, kmer, cutoff,
+      normaliser = Khmer.new(@output_dir, @threads, @memory, kmer, cutoff,
                             tables)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        normalizer.interleave(left, right)
+        normaliser.interleave(left, right)
       end
-      @data = normalizer.normalize
+      @data = normaliser.normalise
       @data.each do |file|
-        file[:processed] << "khmer"
+        file[:processed][:normalise] = "khmer"
       end
-      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
     end
 
     def bbnorm(k=31, target_coverage=20, bits=8, tables=3,
                lowthresh=1, mindepth=1, minkmers=15)
-      normalizer = BBnorm.new(@output_dir, @threads, @memory,
+      normaliser = BBnorm.new(@output_dir, @threads, @memory,
               k, target_coverage, bits, tables, lowthresh, mindepth, minkmers)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        normalizer.run(left, right)
-        left[:processed] << "bbnorm"
-        right[:processed] << "bbnorm"
+        normaliser.run(left, right)
+        left[:processed][:normalise] = "bbnorm"
+        right[:processed][:normalise] = "bbnorm"
 
       end
-      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
     end
 
     def facs(filter=nil, k=nil, false_positive=0.005, threshold=0.4)
@@ -183,10 +198,12 @@ module Preprocessor
 
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         filterer.run(left, right)
-        left[:processed] << "facs"
-        right[:processed] << "facs"
+        left[:processed][:filter] = "facs"
+        right[:processed][:filter] = "facs"
       end
-      File.open("#{@output_dir}/log", "wb") {|f| f.write(JSON.pretty_generate(@data))}
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
     end
 
     def cbnorm # yet to be implemented

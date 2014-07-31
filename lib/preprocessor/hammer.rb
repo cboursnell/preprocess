@@ -52,11 +52,11 @@ module Preprocessor
       cmd << " -t #{@threads}"
       cmd << " -m #{@memory}"
       cmd << " -o #{dir}"
-      # puts cmd
       hammer_cmd = Cmd.new(cmd)
       hammer_cmd.run
       if !hammer_cmd.status.success?
-        raise RuntimeError.new("BayesHammer failed\n#{hammer_cmd.stderr}")
+        msg = "BayesHammer failed\n#{hammer_cmd.stdout}\n#{hammer_cmd.stderr}"
+        raise RuntimeError.new(msg)
       end
       yaml = YAML.load_file("#{dir}/corrected/corrected.yaml")
       cat_cmd = "cat "

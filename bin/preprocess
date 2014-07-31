@@ -18,6 +18,7 @@
 require 'trollop'
 require 'preprocessor'
 require 'set'
+require 'json'
 
 opts = Trollop::options do
   version "v0.3"
@@ -69,6 +70,8 @@ opts = Trollop::options do
   opt :tables, "The number of hash tables to use for digital normalisation",
       :default => 3,
       :type => :int
+  opt :continue, "Try to continue pipeline",
+      :default => false
   opt :verbose, "Be verbose"
   opt :morehelp, "Get help on how to format the input file"
 end
@@ -86,7 +89,7 @@ if opts.morehelp
   puts "rice,fastq/BS-1-R2.fastq,1,BS,2"
   puts "rice,fastq/M-1-R1.fastq,1,M,1"
   puts "rice,fastq/M-1-R2.fastq,1,M,2"
-  exit
+  exit(1)
 end
 
 if opts.left and opts.right
@@ -101,49 +104,67 @@ else
   Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
 end
 Trollop::die "Must specify output" if !opts.output
-Trollop::die :output, "mustn't exist" if Dir.exist?(opts.output)
+if opts.continue and !Dir.exist?(opts.output)
+  Trollop::die :output, "must exist"
+elsif !opts.continue and Dir.exist?(opts.output)
+  Trollop::die :output, "mustn't exist"
+end
 
 preprocessor = Preprocessor::Preprocessor.new(opts.output, opts.verbose,
                                                  opts.threads, opts.memory)
 
-if opts.left and opts.right
+if opts.continue
+  # load log from output directory
+  preprocessor.data = JSON.parse(
+    File.open(File.join(opts.output, "log")).readlines.join,
+    :symbolize_names => true
+  )
+elsif opts.left and opts.right
   preprocessor.load_reads(opts.left, opts.right, opts.name)
 else
   preprocessor.load_input(opts.input)
 end
 
-preprocessor.gunzip
-
-# if opts.filter == "none"
-# elsif opts.filter == "facs"
-#   preprocessor.facs(opts.filter_fasta)
-# else
-#   raise RuntimeError.new("#{opts.trimer} is not a valid input to filter")
-# end
-
-if opts.trimmer == "none"
-elsif opts.trimmer == "trimmomatic"
-  preprocessor.trimmomatic(opts.minlen, 4, 15, 15, 15, 2)
-elsif opts.trimmer == "skewer"
-  preprocessor.skewer(25, 0, opts.minlen)
+if opts.continue and preprocessor.data[0][:processed][:unzip]
 else
-  raise RuntimeError.new("#{opts.trimer} is not a valid input to trimmer")
+  preprocessor.gunzip
 end
 
-if opts.correction == "none"
-elsif opts.correction == "hammer"
-  preprocessor.hammer
+if opts.continue and preprocessor.data[0][:processed][:trim]
+  puts "already completed #{preprocessor.data[0][:processed][:trim]}"
 else
-  raise RuntimeError.new("#{opts.correction} is not a valid input to correction")
+  if opts.trimmer == "none"
+  elsif opts.trimmer == "trimmomatic"
+    preprocessor.trimmomatic(opts.minlen, 4, 15, 15, 15, 2)
+  elsif opts.trimmer == "skewer"
+    preprocessor.skewer(25, 0, opts.minlen)
+  else
+    raise RuntimeError.new("#{opts.trimer} is not a valid input to trimmer")
+  end
 end
 
-if opts.normalise == "none"
-elsif opts.normalise == "bbnorm"
-  preprocessor.bbnorm(opts.kmer, opts.cutoff, 8, opts.tables)
-elsif opts.normalise == "khmer"
-  preprocessor.khmer(opts.kmer, opts.cutoff, opts.tables)
+if opts.continue and preprocessor.data[0][:processed][:correction]
+  puts "already completed #{preprocessor.data[0][:processed][:correction]}"
 else
-  raise RuntimeError.new("#{opts.normalise} is not a valid input to normalise")
+  if opts.correction == "none"
+  elsif opts.correction == "hammer"
+    preprocessor.hammer
+  else
+    raise RuntimeError.new("#{opts.correction} is not a valid input to correction")
+  end
+end
+
+if opts.continue and preprocessor.data[0][:processed][:normalise]
+  puts "already completed #{preprocessor.data[0][:processed][:normalise]}"
+else
+  if opts.normalise == "none"
+  elsif opts.normalise == "bbnorm"
+    preprocessor.bbnorm(opts.kmer, opts.cutoff, 8, opts.tables)
+  elsif opts.normalise == "khmer"
+    preprocessor.khmer(opts.kmer, opts.cutoff, opts.tables)
+  else
+    raise RuntimeError.new("#{opts.normalise} is not a valid input to normalise")
+  end
 end
 
 set = Set.new

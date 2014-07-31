@@ -18,8 +18,7 @@ module Preprocessor
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'trimmomatic.yaml')
       Bindeps.require gem_deps
-      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      @path = File.join(gem_dir, 'bin', 'trimmomatic-0.32.jar')
+      @path = File.join(ENV['GEM_HOME'], 'bin', 'trimmomatic-0.32.jar')
     end
 
     def run left, right=nil
@@ -30,26 +29,26 @@ module Preprocessor
         outfile_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.t.fq"
         outfileU_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.tU.fq"
 
-        trim_cmd = "java -jar #{@path} PE "
-        trim_cmd << " -phred#{self.detect_phred left[:current]}"
-        trim_cmd << " -threads #{@threads}"
-        trim_cmd << " #{left[:current]} #{right[:current]}"
-        trim_cmd << " #{outfile_left} #{outfileU_left}"
-        trim_cmd << " #{outfile_right} #{outfileU_right}"
-        trim_cmd << " LEADING:#{@leading} TRAILING:#{@trailing}"
-        trim_cmd << " SLIDINGWINDOW:#{@windowsize}:#{@quality}"
-        trim_cmd << " MINLEN:#{@minlen}"
+        cmd = "java -jar #{@path} PE "
+        cmd << " -phred#{self.detect_phred left[:current]}"
+        cmd << " -threads #{@threads}"
+        cmd << " #{left[:current]} #{right[:current]}"
+        cmd << " #{outfile_left} #{outfileU_left}"
+        cmd << " #{outfile_right} #{outfileU_right}"
+        cmd << " LEADING:#{@leading} TRAILING:#{@trailing}"
+        cmd << " SLIDINGWINDOW:#{@windowsize}:#{@quality}"
+        cmd << " MINLEN:#{@minlen}"
 
         left[:current] = outfile_left
         left[:unpaired] = outfileU_left
         right[:current] = outfile_right
         right[:unpaired] = outfileU_right
 
-        if !File.exist?("#{outfile_left}")
-          cmd = Cmd.new(trim_cmd)
-          cmd.run
-        else
-          puts "trimmomatic already run on #{left[:file]}"
+        trim_cmd = Cmd.new(cmd)
+        trim_cmd.run
+        if !trim_cmd.status.success?
+          msg = "trimmomatic failed\n#{trim_cmd.stdout}\n#{trim_cmd.stderr}"
+          raise RuntimeError.new(msg)
         end
 
       else # unpaired

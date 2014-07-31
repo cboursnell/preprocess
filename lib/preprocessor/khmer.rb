@@ -21,7 +21,7 @@ module Preprocessor
       @hashes = []
     end
 
-    def normalize
+    def normalise
       paired_file_list = ""
       single_file_list = ""
       paired_name = "paired"
