@@ -56,7 +56,13 @@ opts = Trollop::options do
   opt :normalise, "Which digital normalisation program to run (none|khmer|bbnorm)",
       :default => "bbnorm",
       :type => String
-  opt :filter_fasta, "A fasta file of sequences to filter against",
+  opt :aligner, "Which aligner to use (none|bowtie2|bbmap)",
+      :default => "none",
+      :type => String
+  # opt :filter_fasta, "A fasta file of sequences to filter against",
+      # :type => String
+  opt :reference, "Fasta file of reference sequence. Used by the aligner.
+                   Ignored otherwise",
       :type => String
   opt :minlen, "The minimum length for trimmed sequences",
       :default => 40,
@@ -92,22 +98,30 @@ if opts.morehelp
   exit(1)
 end
 
-if opts.left and opts.right
+if opts.left and opts.right and !opts.continue
   opts.left.split(",").each do |file|
     Trollop::die :input, "must exist" if !File.exist?(file)
   end
   opts.right.split(",").each do |file|
     Trollop::die :input, "must exist" if !File.exist?(file)
   end
+elsif opts.continue
 else
   Trollop::die "Must specify input" if !opts.input
   Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
 end
-Trollop::die "Must specify output" if !opts.output
+
 if opts.continue and !Dir.exist?(opts.output)
   Trollop::die :output, "must exist"
 elsif !opts.continue and Dir.exist?(opts.output)
   Trollop::die :output, "mustn't exist"
+end
+if opts.aligner
+  if opts.reference
+    Trollop::die "#{opts.reference} not found" if !File.exist?(opts.reference)
+  else
+    Trollop::die :reference, "must be specified when using option --aligner"
+  end
 end
 
 preprocessor = Preprocessor::Preprocessor.new(opts.output, opts.verbose,
@@ -164,6 +178,18 @@ else
     preprocessor.khmer(opts.kmer, opts.cutoff, opts.tables)
   else
     raise RuntimeError.new("#{opts.normalise} is not a valid input to normalise")
+  end
+end
+
+if opts.continue and preprocessor.data[0][:processed][:align]
+  puts "already completed #{preprocessor.data[0][:processed][:align]}"
+else
+  if opts.aligner == "none"
+  elsif opts.aligner == "bowtie2"
+    preprocessor.bowtie2(opts.reference, false)
+  elsif opts.aligner == "bbmap"
+  else
+    raise RuntimeError.new("#{opts.aligner} is not a valid input to aligner")
   end
 end
 

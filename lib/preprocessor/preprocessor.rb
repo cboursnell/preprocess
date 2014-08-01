@@ -219,6 +219,21 @@ module Preprocessor
       end
     end
 
+    def bowtie2(reference, expression)
+      aligner = Bowtie2.new(@output_dir, @threads, reference, expression)
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        aligner.run(left, right)
+        left[:processed][:align] = "bowtie2"
+        right[:processed][:align] = "bowtie2"
+      end
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
+      File.open(File.join(@output_dir, "bowtie2.stats"), "wb") do |out|
+        out.write aligner.get_stats
+      end
+    end
+
     def cbnorm # yet to be implemented
 
     end
