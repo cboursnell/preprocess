@@ -17,23 +17,24 @@ module Preprocessor
         wget_cmd << "SPAdes-3.1.0-Linux.tar.gz -O "
         wget_cmd << "#{File.join(gem_dir,"bin","spades.tar.gz")}"
 
-        tar_cmd = "tar xzf #{File.join(gem_dir,"bin","spades.tar.gz")}"
+        archive = File.join(gem_dir,"bin","spades.tar.gz")
+        tar_cmd = "tar xzf #{archive}"
         tar_cmd << " -C #{File.join(gem_dir,"bin")}"
         download = Cmd.new(wget_cmd)
         download.run
         if download.status.success?
-          # puts download.cmd
-          # puts download.stdout
-
           unpack = Cmd.new(tar_cmd)
           unpack.run
-          if unpack.status.success?
-            # puts unpack.cmd
-            # puts unpack.stdout
+          if !unpack.status.success?
+            msg = "unpacking spades.tar.gz failed\n#{unpack.stderr}"
+            raise RuntimeError.new msg
           end
+          File.delete(archive)
         else
-          puts download.stdout
-          puts download.stderr
+          msg = "download of spades.tar.gz failed\n"
+          msg << download.stdout
+          msg << download.stderr
+          raise RuntimeError.new msg
         end
       end
     end

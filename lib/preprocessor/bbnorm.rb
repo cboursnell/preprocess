@@ -42,6 +42,7 @@ module Preprocessor
         if !untar.status.success?
           raise RuntimeError.new("untar failed")
         end
+        File.delete(dl)
       else
         raise RuntimeError.new("download failed")
       end

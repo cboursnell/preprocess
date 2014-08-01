@@ -1,4 +1,6 @@
 require 'bindeps'
+require 'which'
+include Which
 
 module Preprocessor
 
@@ -19,6 +21,8 @@ module Preprocessor
       gem_deps = File.join(gem_dir, 'deps', 'trimmomatic.yaml')
       Bindeps.require gem_deps
       @path = File.join(ENV['GEM_HOME'], 'bin', 'trimmomatic-0.32.jar')
+      @java = which('java').first
+      raise RuntimeError.new("java not installed") if @java.empty?
     end
 
     def run left, right=nil
@@ -29,7 +33,7 @@ module Preprocessor
         outfile_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.t.fq"
         outfileU_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.tU.fq"
 
-        cmd = "java -jar #{@path} PE "
+        cmd = "#{@java} -jar #{@path} PE "
         cmd << " -phred#{self.detect_phred left[:current]}"
         cmd << " -threads #{@threads}"
         cmd << " #{left[:current]} #{right[:current]}"
