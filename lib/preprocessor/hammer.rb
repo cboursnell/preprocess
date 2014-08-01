@@ -61,6 +61,8 @@ module Preprocessor
       end
       yaml = YAML.load_file("#{dir}/corrected/corrected.yaml")
       cat_cmd = "cat "
+      left[:prehammer] = left[:current]
+      right[:prehammer] = right[:current]
       left[:current] = yaml[0]["left reads"][0]
       right[:current] = yaml[0]["right reads"][0]
 
@@ -85,6 +87,48 @@ module Preprocessor
         right[:unpaired] = "#{out}"
       end
 
+    end
+
+    def stats file
+      # open :prehammer and :current and compare bases
+      # hopefully the reads will be the same length
+      @errors = Array.new(100,0)
+      before = File.open(file[:prehammer])
+      after = File.open(file[:current])
+      name1 = before.readline
+      name2 = after.readline
+      while name1 and name2
+        seq1 = before.readline
+        seq2 = after.readline
+        2.times { before.readline; after.readline }
+        while name1 and name1 != name2
+          # :current is always going to be a subset of :prehammer
+          # so just scan forwards in :prehammer until we find
+          # a read with a matching name
+          name1 = before.readline rescue nil
+          seq1 = before.readline rescue nil
+          2.times { before.readline }
+        end
+        if seq1 and seq1.length == seq2.length
+          (0..seq1.length-1).each do |i|
+            if seq1[i]!=seq2[i]
+              @errors[i] += 1
+            end
+          end
+        end
+
+        name1 = before.readline rescue nil
+        name2 = after.readline rescue nil
+      end
+    end
+
+    def get_stats
+      tot = @errors.reduce(0) { |sum, c| sum += c }
+      str = ""
+      @errors.each_with_index do |count, length|
+        str << "#{length}\t#{count}\t#{(100 * count / tot.to_f).round(2)}%\n"
+      end
+      str
     end
 
   end

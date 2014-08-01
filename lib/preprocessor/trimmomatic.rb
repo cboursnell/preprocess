@@ -54,10 +54,37 @@ module Preprocessor
           msg = "trimmomatic failed\n#{trim_cmd.stdout}\n#{trim_cmd.stderr}"
           raise RuntimeError.new(msg)
         end
-
       else # unpaired
 
       end
+    end
+
+    def stats file
+      @file_histo = Array.new(101,0) if !@file_histo
+      file = File.open(file[:current])
+      name = file.readline
+      seq = file.readline
+      plus = file.readline
+      qual = file.readline
+      while name
+        @file_histo[seq.chomp.length] += 1
+        name = file.readline rescue nil
+        seq = file.readline rescue nil
+        plus = file.readline rescue nil
+        qual = file.readline rescue nil
+      end
+      file.close
+    end
+
+    def get_stats
+      tot = @file_histo.reduce(0) { |sum, c| sum += c }
+      str = ""
+      @file_histo.each_with_index do |count, length|
+        if count > 0
+          str << "#{length}\t#{count}\t#{(100 * count / tot.to_f).round(2)}%\n"
+        end
+      end
+      str
     end
 
     def detect_phred filename

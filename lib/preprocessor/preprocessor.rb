@@ -133,6 +133,12 @@ module Preprocessor
       File.open("#{@output_dir}/log", "wb") do |f|
         f.write(JSON.pretty_generate(@data))
       end
+      @data.each do |file|
+        trimmer.stats file
+      end
+      File.open(File.join(@output_dir, "trimmomatic.stats"), "wb") do |out|
+        out.write trimmer.get_stats
+      end
     end
 
     def skewer(end_quality=25, mean_quality=0, min_length=40)
@@ -158,6 +164,13 @@ module Preprocessor
       File.open("#{@output_dir}/log", "wb") do |f|
         f.write(JSON.pretty_generate(@data))
       end
+      @data.each do |file|
+        correcter.stats file
+      end
+      File.open(File.join(@output_dir, "hammer.stats"), "wb") do |out|
+        out.write correcter.get_stats
+      end
+
     end
 
     def khmer(kmer=23, cutoff=20, tables=4)
