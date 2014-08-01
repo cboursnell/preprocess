@@ -44,9 +44,6 @@ opts = Trollop::options do
   opt :memory, "Memory to use in GB",
       :default => 4,
       :type => :int
-  # opt :filter, "Which filter program to use (none|facs)",
-  #     :default => "facs",
-  #     :type => String
   opt :trimmer, "Which trimming program to use (none|trimmomatic|skewer)",
       :default => "trimmomatic",
       :type => String
@@ -59,8 +56,6 @@ opts = Trollop::options do
   opt :aligner, "Which aligner to use (none|bowtie2|bbmap)",
       :default => "none",
       :type => String
-  # opt :filter_fasta, "A fasta file of sequences to filter against",
-      # :type => String
   opt :reference, "Fasta file of reference sequence. Used by the aligner.
                    Ignored otherwise",
       :type => String
