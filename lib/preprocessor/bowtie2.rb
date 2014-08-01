@@ -60,6 +60,8 @@ module Preprocessor
       align.run
       hash = {}
       if align.status.success?
+        left[:sam] = sam
+        right[:sam] = nil
         out = align.stderr.split("\n")
         out.each do |row|
           if row =~ /([0-9]+)\sreads;\ of\ these:/

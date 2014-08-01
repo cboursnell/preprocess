@@ -1,0 +1,10 @@
+express:
+  binaries:
+    - express
+  version:
+    number: '1.5.1'
+    command: 'express'
+  url:
+    64bit:
+      linux: http://bio.math.berkeley.edu/eXpress/downloads/express-1.5.1/express-1.5.1-linux_x86_64.tgz
+      macosx: http://bio.math.berkeley.edu/eXpress/downloads/express-1.5.1/express-1.5.1-macosx_x86_64.tgz

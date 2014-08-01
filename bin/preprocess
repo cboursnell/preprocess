@@ -64,6 +64,9 @@ opts = Trollop::options do
   opt :reference, "Fasta file of reference sequence. Used by the aligner.
                    Ignored otherwise",
       :type => String
+  opt :expression, "Which expression quantification to use (none|express)",
+      :default => "none",
+      :type => String
   opt :minlen, "The minimum length for trimmed sequences",
       :default => 40,
       :type => :int
@@ -116,11 +119,20 @@ if opts.continue and !Dir.exist?(opts.output)
 elsif !opts.continue and Dir.exist?(opts.output)
   Trollop::die :output, "mustn't exist"
 end
-if opts.aligner
+if opts.aligner!="none"
   if opts.reference
     Trollop::die "#{opts.reference} not found" if !File.exist?(opts.reference)
   else
     Trollop::die :reference, "must be specified when using option --aligner"
+  end
+end
+
+if opts.expression=="none"
+  expression = false
+else
+  if opts.aligner=="none"
+    Trollop::die :aligner, "must be set if you want to calculate expression"
+    expression = true
   end
 end
 
@@ -186,10 +198,21 @@ if opts.continue and preprocessor.data[0][:processed][:align]
 else
   if opts.aligner == "none"
   elsif opts.aligner == "bowtie2"
-    preprocessor.bowtie2(opts.reference, false)
+    preprocessor.bowtie2(opts.reference, expression)
   elsif opts.aligner == "bbmap"
   else
     raise RuntimeError.new("#{opts.aligner} is not a valid input to aligner")
+  end
+end
+
+if opts.continue and preprocessor.data[0][:processed][:expression]
+  puts "already completed #{preprocessor.data[0][:processed][:expression]}"
+else
+  if opts.expression == "none"
+  elsif opts.expression == "express"
+    preprocessor.express(opts.reference)
+  else
+    raise RuntimeError.new("#{opts.expression} is not a valid input to expression")
   end
 end
 

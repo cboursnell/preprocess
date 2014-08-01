@@ -234,6 +234,41 @@ module Preprocessor
       end
     end
 
+    def express(reference)
+      expression = Express.new(@output_dir, @threads, reference)
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        expression.run(left, right)
+        left[:processed][:expression] = "eXpress"
+        right[:processed][:expression] = "eXpress"
+      end
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
+      # output a csv of name,type,rep,express_file_path
+      # to be passed into Rscript
+      results = "#{@output_dir}/express_results"
+      File.open(results, "wb") do |out|
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          name = left[:name]
+          type = left[:type]
+          rep = left[:rep]
+          file = left[:express]
+          out.write("#{name},#{type},#{rep},#{file}\n")
+        end
+      end
+      #Usage: bayseq.R [-[-help|h]] [-[-threads|t] <integer>]
+      # [-[-files|f] <character>] [-[-output|o] <character>]
+      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+      bayseq_path = File.join(gem_dir, "bin", "bayseq.R")
+      cmd = "Rscript #{bayseq_path} -t #{@threads} "
+      cmd << " -f #{results} -o #{@output_dir}"
+
+      bayseq = Cmd.new(cmd)
+      bayseq.run
+      # puts bayseq.stdout
+      # puts bayseq.stderr
+    end
+
     def cbnorm # yet to be implemented
 
     end
