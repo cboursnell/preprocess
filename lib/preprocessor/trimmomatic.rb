@@ -22,7 +22,7 @@ module Preprocessor
       Bindeps.require gem_deps
       @path = File.join(ENV['GEM_HOME'], 'bin', 'trimmomatic-0.32.jar')
       @java = which('java').first
-      raise RuntimeError.new("java not installed") if @java.empty?
+      raise RuntimeError.new("java not installed") if !@java
     end
 
     def run left, right=nil
