@@ -5,7 +5,7 @@ require 'tmpdir'
 
 class TestAlign < Test::Unit::TestCase
 
-  context 'aligning' do
+  context 'aligner' do
 
     setup do
       input = File.join(File.dirname(__FILE__), 'data', 'raw_data')
