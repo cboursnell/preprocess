@@ -38,8 +38,13 @@ class TestPreprocessor < Test::Unit::TestCase
 
     should 'install trimmomatic' do
       @pre.trimmomatic
-      bindir = File.join(ENV['GEM_HOME'], 'bin')
-      cmd = "java -jar #{bindir}/trimmomatic-0.32.jar"
+      paths = which('trimmomatic-0.32.jar')
+      if paths.empty?
+        path = File.join(ENV['GEM_HOME'], 'bin', 'trimmomatic-0.32.jar')
+      else
+        path = paths.first
+      end
+      cmd = "java -jar #{path}"
       java_cmd = Preprocessor::Cmd.new(cmd)
       java_cmd.run
       assert_equal 357, java_cmd.stderr.length

@@ -20,6 +20,14 @@ module Preprocessor
       @minkmers = minkmers
 
       @java = which('java').first
+      raise RuntimeError.new("java not installed") if !@java
+      java_version_check = Cmd.new("java -version")
+      java_version_check.run
+      unless java_version_check.stderr.first=~/1.7/
+        msg = "bbnorm requires java version 1.7 or higher\n"
+        msg << "You have #{java_version_check.stderr.first}"
+        raise RuntimeError.new(msg)
+      end
 
       @gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       @bbnorm = File.join(@gem_dir, 'bin', 'bbmap', 'bbnorm.sh')
