@@ -16,7 +16,8 @@ module Preprocessor
       @min_table_size = ((@memory/@tables)*1e9).to_i
       @khmer = which("normalize-by-median.py").first
       if !@khmer
-        raise RuntimeError.new("khmer not installed")
+        msg = "khmer not installed"
+        raise RuntimeError.new(msg)
       end
       @hashes = []
     end

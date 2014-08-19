@@ -56,8 +56,7 @@ opts = Trollop::options do
   opt :aligner, "Which aligner to use (none|bowtie2|bbmap)",
       :default => "none",
       :type => String
-  opt :reference, "Fasta file of reference sequence. Used by the aligner.
-                   Ignored otherwise",
+  opt :reference, "Fasta file of reference sequence. Used by the aligner. Ignored otherwise",
       :type => String
   opt :expression, "Which expression quantification to use (none|express)",
       :default => "none",

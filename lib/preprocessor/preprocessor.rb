@@ -256,17 +256,17 @@ module Preprocessor
           out.write("#{name},#{type},#{rep},#{file}\n")
         end
       end
-      #Usage: bayseq.R [-[-help|h]] [-[-threads|t] <integer>]
+      #Usage: ebseq.R [-[-help|h]] [-[-threads|t] <integer>]
       # [-[-files|f] <character>] [-[-output|o] <character>]
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      bayseq_path = File.join(gem_dir, "bin", "bayseq.R")
-      cmd = "Rscript #{bayseq_path} -t #{@threads} "
+      ebseq_path = File.join(gem_dir, "lib", "ebseq.R")
+      cmd = "Rscript #{ebseq_path} -t #{@threads} "
       cmd << " -f #{results} -o #{@output_dir}"
 
-      bayseq = Cmd.new(cmd)
-      bayseq.run
-      # puts bayseq.stdout
-      # puts bayseq.stderr
+      ebseq = Cmd.new(cmd)
+      ebseq.run
+      puts ebseq.stdout
+      puts ebseq.stderr
     end
 
     def cbnorm # yet to be implemented

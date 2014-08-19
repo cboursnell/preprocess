@@ -10,6 +10,7 @@ class TestAlign < Test::Unit::TestCase
     setup do
       input = File.join(File.dirname(__FILE__), 'data', 'raw_data')
       @output = Dir.mktmpdir
+      puts @output
       verbose = true
       threads = 1
       memory = 1
@@ -32,6 +33,17 @@ class TestAlign < Test::Unit::TestCase
       assert File.exist?("#{@output}/A_1-1.t-A_1-2.t-reference.fa.sam")
       assert File.exist?("#{@output}/A_2-1.t-A_2-2.t-reference.fa.sam")
       assert File.exist?("#{@output}/bowtie2.stats")
+    end
+
+    should 'run bowtie2 and express' do
+      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      @pre.trimmomatic
+      @pre.bowtie2(reference, true)
+      @pre.express(reference)
+      assert File.exist?(File.join(@output, "express_results"))
+      assert File.exist?(File.join(@output, "test_DE_ebseq.txt"))
+
+
     end
 
   end
