@@ -48,10 +48,10 @@ opts = Trollop::options do
       :default => "trimmomatic",
       :type => String
   opt :correction, "Which read error correction program to use (none|hammer)",
-      :default => "hammer",
+      :default => "none",
       :type => String
   opt :normalise, "Which digital normalisation program to run (none|khmer|bbnorm)",
-      :default => "bbnorm",
+      :default => "none",
       :type => String
   opt :aligner, "Which aligner to use (none|bowtie2|bbmap)",
       :default => "none",

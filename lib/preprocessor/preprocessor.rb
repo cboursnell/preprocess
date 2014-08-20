@@ -19,6 +19,7 @@
 require 'rubygems'
 require 'set'
 require 'json'
+require 'zlib'
 require 'which'
 require 'bindeps'
 include Which
@@ -52,8 +53,8 @@ module Preprocessor
             msg << "Please refer to documentation or use --morehelp option"
             raise MalformedInputError.new(msg)
           end
-          if !File.exist?(cols[0])
-            raise RuntimeError.new("#{cols[0]} not found")
+          if !File.exist?(cols[1])
+            raise RuntimeError.new("#{cols[1]} not found")
           end
           if cols[4].to_i != 1 and cols[4].to_i != 2
             raise RuntimeError.new("Pair should be 1 or 2")
