@@ -127,6 +127,7 @@ module Preprocessor
                                 quality, trailing, leading, mismatches)
 
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        puts "Trimming #{left[:type]}-#{left[:rep]}..." if @verbose
         trimmer.run(left, right)
         left[:processed][:trim] = "trimmomatic"
         right[:processed][:trim] = "trimmomatic"
@@ -158,6 +159,7 @@ module Preprocessor
     def hammer
       correcter = Hammer.new(@output_dir, @threads, @memory)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        puts "Correcting #{left[:type]}-#{left[:rep]}..." if @verbose
         correcter.run(left, right)
         left[:processed][:correction] = "bayeshammer"
         right[:processed][:correction] = "bayeshammer"
@@ -205,24 +207,10 @@ module Preprocessor
       end
     end
 
-    def facs(filter=nil, k=nil, false_positive=0.005, threshold=0.4)
-      filter = @filter unless filter
-      filterer = Facs.new(@output_dir, @threads, @memory, filter,
-                          k, false_positive, threshold)
-
-      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        filterer.run(left, right)
-        left[:processed][:filter] = "facs"
-        right[:processed][:filter] = "facs"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
-      end
-    end
-
     def bowtie2(reference, expression)
       aligner = Bowtie2.new(@output_dir, @threads, reference, expression)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
         aligner.run(left, right)
         left[:processed][:align] = "bowtie2"
         right[:processed][:align] = "bowtie2"
@@ -238,8 +226,7 @@ module Preprocessor
     def snap(reference)
       aligner = Snap.new(@output_dir, @threads, reference)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        puts "left:  #{left}"
-        puts "right: #{right}"
+        puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
         aligner.run(left, right)
         left[:processed][:align] = "snap"
         right[:processed][:align] = "snap"

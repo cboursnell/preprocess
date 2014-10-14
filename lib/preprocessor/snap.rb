@@ -32,7 +32,7 @@ module Preprocessor
     end
 
     def build_paired_cmd left, right, threads
-      cmd = "#{@snap} paired #{@index_name}"
+      cmd = "#{@snap} paired #{@outdir}/#{@index_name}"
       cmd << " #{left[:current]}"
       cmd << " #{right[:current]}"
       cmd << " -o #{@outdir}/#{@bam}"
@@ -44,12 +44,12 @@ module Preprocessor
       cmd << " -t #{threads}"
       cmd << " -b" # bind threads to cores
       cmd << " -M"  # format cigar string
-      cmd << " -sa" # keep all alignments, don't discard 0x100
+      # cmd << " -sa" # keep all alignments, don't discard 0x100
       cmd
     end
 
     def build_single_cmd reads, threads
-      cmd = "#{@snap} single #{@index_name}"
+      cmd = "#{@snap} single #{@outdir}/#{@index_name}"
       cmd << " #{reads[:current]}"
       cmd << " -o #{@outdir}/#{@bam}"
       cmd << " -H 300000" # max seed hits to consider in paired mode
@@ -59,7 +59,7 @@ module Preprocessor
       cmd << " -t #{threads}"
       cmd << " -b" # bind threads to cores
       cmd << " -M"  # format cigar string
-      cmd << " -sa" # keep all alignments, don't discard 0x100
+      # cmd << " -sa" # keep all alignments, don't discard 0x100
       cmd
     end
 
@@ -72,7 +72,6 @@ module Preprocessor
 
       unless File.exists? @bam
         snapcmd = build_paired_cmd(left, right, threads)
-        puts snapcmd
         runner = Cmd.new snapcmd
         runner.run
         @stats = runner.stdout
@@ -84,9 +83,9 @@ module Preprocessor
 
     def build_index file, threads
       @index_name = File.basename(file, File.extname(file))
-      unless Dir.exists?(@index_name)
-        cmd = "#{@snap} index #{file} #{@index_name}"
-        cmd << " -s 23"
+      unless Dir.exists?("#{@outdir}/#{@index_name}")
+        cmd = "#{@snap} index #{file} #{@outdir}/#{@index_name}"
+        cmd << " -s 20"
         cmd << " -t#{threads}"
         cmd << " -bSpace" # contig name terminates with space char
         runner = Cmd.new cmd
