@@ -67,7 +67,7 @@ module Preprocessor
                      :current => File.expand_path(cols[1]),
                      :processed => {} }
         end
-        @paired = @data.reduce(0) {|max,v| max=[max,v[:pair]].max}
+        @paired = @data.reduce(0) { |max,v| max=[max,v[:pair]].max }
       else
         raise RuntimeError, "#{input} does not exist"
       end
@@ -114,6 +114,33 @@ module Preprocessor
       end
       File.open("#{@output_dir}/log", "wb")  do |f|
         f.write(JSON.pretty_generate(@data))
+      end
+    end
+
+    def fastq_dump
+      tmp = @data.dup
+      @data = []
+      tmp.each do |info|
+        if info[:current]=~/\.sra$/
+          gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+          gem_deps = File.join(gem_dir, 'deps', 'fastq-dump.yaml')
+          Bindeps.require gem_deps
+          cmd = "fastq-dump.2.4.0 --origfmt --split-3 #{info[:current]} "
+          cmd << "--outdir #{@output_dir}"
+          extract = Cmd.new(cmd)
+          extract.run
+          basename = File.basename(info[:current], File.extname(info[:current]))
+          left = info.dup
+          right = info.dup
+          left[:current] = "#{@output_dir}/#{basename}_1.fastq"
+          right[:current] = "#{@output_dir}/#{basename}_2.fastq"
+          left[:pair] = 1
+          right[:pair] = 2
+          left[:processed][:uncompress] = "fastq-dump"
+          right[:processed][:uncompress] = "fastq-dump"
+          @data << left
+          @data << right
+        end
       end
     end
 

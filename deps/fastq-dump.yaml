@@ -1,0 +1,11 @@
+fastq-dump:
+  binaries:
+    - fastq-dump.2.4.0
+  version:
+    number: '2.4.0'
+    command: 'fastq-dump.2.4.0'
+  url:
+    64bit:
+      macosx: http://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/2.4.0/sratoolkit.2.4.0-mac64.tar.gz
+      linux: http://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/2.4.0/sratoolkit.2.4.0-ubuntu64.tar.gz
+  unpack: true
