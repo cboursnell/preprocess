@@ -25,8 +25,6 @@ library(EBSeq)
 files <- read.table(opt$files, header=FALSE, sep=",", as.is=TRUE)
 
 names(files) <- c("name", "type", "rep", "file")
-print(files)
-print(opt$output)
 
 data <- data.frame()
 

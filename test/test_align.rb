@@ -35,15 +35,12 @@ class TestAlign < Test::Unit::TestCase
       assert File.exist?("#{@output}/bowtie2.stats")
     end
 
-    should 'run bowtie2 and express' do
+    should 'run snap' do
       reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
-      @pre.trimmomatic
-      @pre.bowtie2(reference, true)
-      @pre.express(reference)
-      assert File.exist?(File.join(@output, "express_results"))
-      assert File.exist?(File.join(@output, "test_DE_ebseq.txt"))
-
-
+      @pre.snap(reference)
+      assert File.exist?("#{@output}/A-1-1.fq.A-1-2.fq.reference.bam")
+      assert File.exist?("#{@output}/A-2-1.fq.A-2-2.fq.reference.bam")
+      assert File.exist?("#{@output}/snap.stats")
     end
 
   end

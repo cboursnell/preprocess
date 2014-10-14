@@ -53,7 +53,7 @@ opts = Trollop::options do
   opt :normalise, "Which digital normalisation program to run (none|khmer|bbnorm)",
       :default => "none",
       :type => String
-  opt :aligner, "Which aligner to use (none|bowtie2|bbmap)",
+  opt :aligner, "Which aligner to use (none|bowtie2|bbmap|snap)",
       :default => "none",
       :type => String
   opt :reference, "Fasta file of reference sequence. Used by the aligner. Ignored otherwise",
@@ -193,7 +193,10 @@ else
   if opts.aligner == "none"
   elsif opts.aligner == "bowtie2"
     preprocessor.bowtie2(opts.reference, expression)
+  elsif opts.aligner == "snap"
+    preprocessor.snap(opts.reference)
   elsif opts.aligner == "bbmap"
+    raise RuntimeError.new("bbmap is not currently implemented")
   else
     raise RuntimeError.new("#{opts.aligner} is not a valid input to aligner")
   end

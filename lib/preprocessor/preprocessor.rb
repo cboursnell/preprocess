@@ -235,6 +235,23 @@ module Preprocessor
       end
     end
 
+    def snap(reference)
+      aligner = Snap.new(@output_dir, @threads, reference)
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        puts "left:  #{left}"
+        puts "right: #{right}"
+        aligner.run(left, right)
+        left[:processed][:align] = "snap"
+        right[:processed][:align] = "snap"
+      end
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
+      File.open(File.join(@output_dir, "snap.stats"), "wb") do |out|
+        out.write aligner.get_stats
+      end
+    end
+
     def express(reference)
       expression = Express.new(@output_dir, @threads, reference)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
