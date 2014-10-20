@@ -31,6 +31,7 @@ module Preprocessor
     end
 
     def run left, right=nil
+      cmd =""
       if right # paired
         outfile_left = "#{@outdir}/#{left[:type]}_#{left[:rep]}-#{left[:pair]}.t.fq"
         outfileU_left = "#{@outdir}/#{left[:type]}_#{left[:rep]}-#{left[:pair]}.tU.fq"
@@ -38,7 +39,7 @@ module Preprocessor
         outfile_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.t.fq"
         outfileU_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.tU.fq"
 
-        cmd = "#{@java} -jar #{@path} PE "
+        cmd << "#{@java} -jar #{@path} PE "
         cmd << " -phred#{self.detect_phred left[:current]}"
         cmd << " -threads #{@threads}"
         cmd << " #{left[:current]} #{right[:current]}"
@@ -53,14 +54,23 @@ module Preprocessor
         right[:current] = outfile_right
         right[:unpaired] = outfileU_right
 
-        trim_cmd = Cmd.new(cmd)
-        trim_cmd.run
-        if !trim_cmd.status.success?
-          msg = "trimmomatic failed\n#{trim_cmd.stdout}\n#{trim_cmd.stderr}"
-          raise RuntimeError.new(msg)
-        end
       else # unpaired
-
+        outfile_left = "#{@outdir}/#{left[:type]}_#{left[:rep]}.t.fq"
+        cmd << "#{@java} -jar #{@path} SE "
+        cmd << " -phred#{self.detect_phred left[:current]}"
+        cmd << " -threads #{@threads}"
+        cmd << " #{left[:current]}"
+        cmd << " #{outfile_left}"
+        cmd << " LEADING:#{@leading} TRAILING:#{@trailing}"
+        cmd << " SLIDINGWINDOW:#{@windowsize}:#{@quality}"
+        cmd << " MINLEN:#{@minlen}"
+        left[:current] = outfile_left
+      end
+      trim_cmd = Cmd.new(cmd)
+      trim_cmd.run
+      if !trim_cmd.status.success?
+        msg = "trimmomatic failed\n#{trim_cmd.stdout}\n#{trim_cmd.stderr}"
+        raise RuntimeError.new(msg)
       end
     end
 
@@ -72,6 +82,7 @@ module Preprocessor
       plus = file.readline
       qual = file.readline
       while name
+        @file_histo[seq.chomp.length] ||= 0
         @file_histo[seq.chomp.length] += 1
         name = file.readline rescue nil
         seq = file.readline rescue nil

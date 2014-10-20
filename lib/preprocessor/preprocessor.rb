@@ -98,6 +98,22 @@ module Preprocessor
       @paired = 2
     end
 
+    def load_single_reads(left, name)
+      @data = []
+      rep = 1
+      left.split(",").each do |a|
+        @data << { :name => name,
+                   :file => File.expand_path(a),
+                   :rep => rep,
+                   :type => name,
+                   :pair => 1,
+                   :current => File.expand_path(a),
+                   :processed => {} }
+        rep += 1
+      end
+      @paired = 1
+    end
+
     def gunzip
       @data.each do |info|
         if info[:current]=~/\.gz$/
@@ -119,7 +135,6 @@ module Preprocessor
 
     def fastq_dump
       tmp = @data.dup
-      @data = []
       tmp.each do |info|
         if info[:current]=~/\.sra$/
           gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
@@ -153,13 +168,25 @@ module Preprocessor
       trimmer = Trimmomatic.new(@output_dir, @threads, minlen, windowsize,
                                 quality, trailing, leading, mismatches)
 
-      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        puts "Trimming #{left[:type]}-#{left[:rep]}..." if @verbose
-        trimmer.run(left, right)
-        left[:processed][:trim] = "trimmomatic"
-        right[:processed][:trim] = "trimmomatic"
-        File.open("#{@output_dir}/log", "wb") do |f|
-          f.write(JSON.pretty_generate(@data))
+      if @paired == 1
+        @data.each_with_index do |left, i|
+          puts "Trimming #{left[:type]}-#{left[:rep]}..." if @verbose
+          right=nil
+          trimmer.run(left, right)
+          left[:processed][:trim] = "trimmomatic"
+          File.open("#{@output_dir}/log", "wb") do |f|
+            f.write(JSON.pretty_generate(@data))
+          end
+        end
+      elsif @paired == 2
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          puts "Trimming #{left[:type]}-#{left[:rep]}..." if @verbose
+          trimmer.run(left, right)
+          left[:processed][:trim] = "trimmomatic"
+          right[:processed][:trim] = "trimmomatic"
+          File.open("#{@output_dir}/log", "wb") do |f|
+            f.write(JSON.pretty_generate(@data))
+          end
         end
       end
       @data.each do |file|

@@ -10,15 +10,15 @@ class TestPreprocessor < Test::Unit::TestCase
     setup do
       input = File.join(File.dirname(__FILE__), 'data', 'raw_data')
       @output = Dir.mktmpdir
-      verbose = true
-      threads = 1
-      memory = 1
-      @pre = Preprocessor::Preprocessor.new(@output, verbose, threads, memory)
+      @verbose = false
+      @threads = 1
+      @memory = 1
+      @pre = Preprocessor::Preprocessor.new(@output, @verbose, @threads, @memory)
       @pre.load_input(input)
     end
 
     teardown do
-      # delete output folder
+      delete output folder
       cmd = "rm -rf #{@output}"
       `#{cmd}`
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
@@ -61,6 +61,16 @@ class TestPreprocessor < Test::Unit::TestCase
       end
     end
 
+    should 'trim single reads using trimmomatic' do
+      @pre = Preprocessor::Preprocessor.new(@output, @verbose, @threads, @memory)
+      reads = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq')
+      reads << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-1.fq')}"
+      @pre.load_single_reads(reads, "A")
+      @pre.trimmomatic
+      assert File.exist?("#{@output}/A_1.t.fq"), "A_1.t.fq doesn't exist"
+      assert File.exist?("#{@output}/A_2.t.fq"), "A_2.q.fq doesn't exist"
+    end
+
     should 'install skewer' do
       @pre.skewer
       cmd = "skewer-0.1.117-linux-x86_64 --help"
@@ -83,13 +93,11 @@ class TestPreprocessor < Test::Unit::TestCase
 
     should 'load reads without input file' do
       verbose = false
-      threads = 1
-      memory = 1
       left = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq')
       left << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-1.fq')}"
       right = File.join(File.dirname(__FILE__), 'data', 'A-1-2.fq')
       right << ",#{File.join(File.dirname(__FILE__), 'data', 'A-2-2.fq')}"
-      pre = Preprocessor::Preprocessor.new(@output, verbose, threads, memory)
+      pre = Preprocessor::Preprocessor.new(@output, verbose, @threads, @memory)
       pre.load_reads(left, right, "A")
       pre.trimmomatic
       pre.hammer
