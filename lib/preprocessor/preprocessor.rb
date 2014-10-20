@@ -110,10 +110,10 @@ module Preprocessor
           end
           info[:current] = output_filename
           info[:processed][:unzip] = "gunzip"
+          File.open("#{@output_dir}/log", "wb")  do |f|
+            f.write(JSON.pretty_generate(@data))
+          end
         end
-      end
-      File.open("#{@output_dir}/log", "wb")  do |f|
-        f.write(JSON.pretty_generate(@data))
       end
     end
 
@@ -158,9 +158,9 @@ module Preprocessor
         trimmer.run(left, right)
         left[:processed][:trim] = "trimmomatic"
         right[:processed][:trim] = "trimmomatic"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
       @data.each do |file|
         trimmer.stats file
@@ -177,9 +177,9 @@ module Preprocessor
         trimmer.run(left, right)
         left[:processed][:trim] = "skewer"
         right[:processed][:trim] = "skewer"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
     end
 
@@ -190,9 +190,9 @@ module Preprocessor
         correcter.run(left, right)
         left[:processed][:correction] = "bayeshammer"
         right[:processed][:correction] = "bayeshammer"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
       @data.each do |file|
         correcter.stats file
@@ -213,9 +213,9 @@ module Preprocessor
       @data = normaliser.normalise
       @data.each do |file|
         file[:processed][:normalise] = "khmer"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
     end
 
@@ -227,10 +227,9 @@ module Preprocessor
         normaliser.run(left, right)
         left[:processed][:normalise] = "bbnorm"
         right[:processed][:normalise] = "bbnorm"
-
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
     end
 
@@ -241,9 +240,9 @@ module Preprocessor
         aligner.run(left, right)
         left[:processed][:align] = "bowtie2"
         right[:processed][:align] = "bowtie2"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
       File.open(File.join(@output_dir, "bowtie2.stats"), "wb") do |out|
         out.write aligner.get_stats
@@ -257,9 +256,9 @@ module Preprocessor
         aligner.run(left, right)
         left[:processed][:align] = "snap"
         right[:processed][:align] = "snap"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
       File.open(File.join(@output_dir, "snap.stats"), "wb") do |out|
         out.write aligner.get_stats
@@ -272,9 +271,9 @@ module Preprocessor
         expression.run(left, right)
         left[:processed][:expression] = "eXpress"
         right[:processed][:expression] = "eXpress"
-      end
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
       # output a csv of name,type,rep,express_file_path
       # to be passed into Rscript
