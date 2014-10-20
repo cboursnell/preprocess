@@ -145,11 +145,6 @@ else
   preprocessor.load_input(opts.input)
 end
 
-if opts.continue and preprocessor.data[0][:processed][:uncompress]
-else
-  preprocessor.fastq_dump
-end
-
 if opts.continue and preprocessor.data[0][:processed][:unzip]
 else
   preprocessor.gunzip
