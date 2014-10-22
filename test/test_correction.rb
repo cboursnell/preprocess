@@ -10,7 +10,7 @@ class TestCorrection < Test::Unit::TestCase
     setup do
       input = File.join(File.dirname(__FILE__), 'data', 'raw_data')
       @output = Dir.mktmpdir
-      verbose = true
+      verbose = false
       threads = 1
       memory = 1
       @pre = Preprocessor::Preprocessor.new(@output, verbose, threads, memory)

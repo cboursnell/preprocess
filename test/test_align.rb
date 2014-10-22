@@ -10,8 +10,7 @@ class TestAlign < Test::Unit::TestCase
     setup do
       input = File.join(File.dirname(__FILE__), 'data', 'raw_data')
       @output = Dir.mktmpdir
-      puts @output
-      verbose = true
+      verbose = false
       threads = 1
       memory = 1
       @pre = Preprocessor::Preprocessor.new(@output, verbose, threads, memory)
@@ -32,6 +31,19 @@ class TestAlign < Test::Unit::TestCase
       @pre.bowtie2(reference, false)
       assert File.exist?("#{@output}/A_1-1.t-A_1-2.t-reference.fa.sam")
       assert File.exist?("#{@output}/A_2-1.t-A_2-2.t-reference.fa.sam")
+      assert File.exist?("#{@output}/bowtie2.stats")
+    end
+
+    should 'run bowtie2 with single reads' do
+      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      pre = Preprocessor::Preprocessor.new(@output, false, 1, 1)
+      left = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq')
+      left << ","
+      left << File.join(File.dirname(__FILE__), 'data', 'A-2-1.fq')
+      pre.load_single_reads(left, "test")
+      pre.bowtie2(reference, false)
+      assert File.exist?("#{@output}/A-1-1-reference.fa.sam")
+      assert File.exist?("#{@output}/A-2-1-reference.fa.sam")
       assert File.exist?("#{@output}/bowtie2.stats")
     end
 

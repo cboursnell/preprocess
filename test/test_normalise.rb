@@ -10,7 +10,7 @@ class TestNormalise < Test::Unit::TestCase
     setup do
       input = File.join(File.dirname(__FILE__), 'data', 'raw_data')
       @output = Dir.mktmpdir
-      verbose = true
+      verbose = false
       threads = 1
       memory = 1
       @pre = Preprocessor::Preprocessor.new(@output, verbose, threads, memory)
@@ -31,7 +31,7 @@ class TestNormalise < Test::Unit::TestCase
       `#{cmd}` if File.exist?(File.join(bindir, "bbmap.tar.gz"))
     end
 
-    should 'normalise trimmed reads with khmer' do
+    should 'run khmer' do
       @pre.trimmomatic
       @pre.khmer(23, 5, 4)
       assert File.exist?("#{@output}/test.khmered.fq-left.fq")

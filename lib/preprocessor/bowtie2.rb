@@ -22,7 +22,7 @@ module Preprocessor
       @stats={:reads=>0,:paired_reads=>0,:unaligned=>0,:unique=>0,:multi=>0}
     end
 
-    def run left, right=nil
+    def build_index
       # construct index if it doesn't exist
       index = File.join(@outdir, File.basename(@reference))
       if !File.exist?("#{index}.1.bt2")
@@ -38,16 +38,25 @@ module Preprocessor
           raise RuntimeError.new(msg)
         end
       end
+      index
+    end
+
+    def run left, right=nil
+      index = build_index
       l = File.basename(left[:current])
-      r = File.basename(right[:current])
+      r = File.basename(right[:current]) if right
       sam = "#{l.split(".")[0..-2].join(".")}-"
-      sam << "#{r.split(".")[0..-2].join(".")}-"
+      sam << "#{r.split(".")[0..-2].join(".")}-" if right
       sam << "#{File.basename(index)}.sam"
       sam = File.join(@outdir, sam)
       cmd = "#{@bowtie}"
       cmd << " -x #{index}"
-      cmd << " -1 #{left[:current]}"
-      cmd << " -2 #{right[:current]}"
+      if right
+        cmd << " -1 #{left[:current]}"
+        cmd << " -2 #{right[:current]}"
+      else
+        cmd << " -U #{left[:current]}"
+      end
       cmd << " -p #{@threads}"
       cmd << " --very-sensitive "
       cmd << " --no-unal" # temp TODO remove
@@ -61,7 +70,7 @@ module Preprocessor
       hash = {}
       if align.status.success?
         left[:sam] = sam
-        right[:sam] = nil
+        right[:sam] = nil if right
         out = align.stderr.split("\n")
         out.each do |row|
           if row =~ /([0-9]+)\sreads;\ of\ these:/

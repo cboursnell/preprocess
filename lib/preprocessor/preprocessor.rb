@@ -262,13 +262,21 @@ module Preprocessor
 
     def bowtie2(reference, expression)
       aligner = Bowtie2.new(@output_dir, @threads, reference, expression)
-      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
-        aligner.run(left, right)
-        left[:processed][:align] = "bowtie2"
-        right[:processed][:align] = "bowtie2"
-        File.open("#{@output_dir}/log", "wb") do |f|
-          f.write(JSON.pretty_generate(@data))
+      if @paired==1
+        @data.each_with_index do |left, i|
+          puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
+          aligner.run(left)
+          left[:processed][:align] = "bowtie2"
+        end
+      elsif @paired==2
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
+          aligner.run(left, right)
+          left[:processed][:align] = "bowtie2"
+          right[:processed][:align] = "bowtie2"
+          File.open("#{@output_dir}/log", "wb") do |f|
+            f.write(JSON.pretty_generate(@data))
+          end
         end
       end
       File.open(File.join(@output_dir, "bowtie2.stats"), "wb") do |out|
@@ -316,15 +324,16 @@ module Preprocessor
       end
       #Usage: ebseq.R [-[-help|h]] [-[-threads|t] <integer>]
       # [-[-files|f] <character>] [-[-output|o] <character>]
-      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      ebseq_path = File.join(gem_dir, "lib", "ebseq.R")
-      cmd = "Rscript #{ebseq_path} -t #{@threads} "
-      cmd << " -f #{results} -o #{@output_dir}"
+      ### rscript
+      # gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+      # ebseq_path = File.join(gem_dir, "lib", "ebseq.R")
+      # cmd = "Rscript #{ebseq_path} -t #{@threads} "
+      # cmd << " -f #{results} -o #{@output_dir}"
 
-      ebseq = Cmd.new(cmd)
-      ebseq.run
-      puts ebseq.stdout
-      puts ebseq.stderr
+      # ebseq = Cmd.new(cmd)
+      # ebseq.run
+      # puts ebseq.stdout
+      # puts ebseq.stderr
     end
 
     def cbnorm # yet to be implemented

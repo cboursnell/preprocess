@@ -18,14 +18,14 @@ class TestPreprocessor < Test::Unit::TestCase
     end
 
     teardown do
-      delete output folder
+      # delete output folder
       cmd = "rm -rf #{@output}"
       `#{cmd}`
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       bindir = File.join(gem_dir, "bin")
       trimmo_path = File.join(ENV['GEM_HOME'], 'bin', 'trimmomatic-0.32.jar')
-      cmd = "rm #{trimmo_path}"
-      `#{cmd}` if File.exist?(trimmo_path)
+      # cmd = "rm #{trimmo_path}"
+      # `#{cmd}` if File.exist?(trimmo_path)
       cmd = "rm -rf #{bindir}/SPAdes-3.1.0-Linux"
       `#{cmd}` if Dir.exist?(File.join(bindir, "SPAdes-3.1.0-Linux"))
       cmd = "rm #{bindir}/spades.tar.gz"
@@ -71,17 +71,17 @@ class TestPreprocessor < Test::Unit::TestCase
       assert File.exist?("#{@output}/A_2.t.fq"), "A_2.q.fq doesn't exist"
     end
 
-    should 'install skewer' do
-      @pre.skewer
-      cmd = "skewer-0.1.117-linux-x86_64 --help"
-      skewer_cmd = Preprocessor::Cmd.new(cmd)
-      skewer_cmd.run
-      stdout = skewer_cmd.stdout.split("\n")
-      str="Skewer (A fast and accurate adapter trimmer for paired-end reads)"
-      ver="Version 0.1.117 (updated in July 12, 2014), Author: Hongshan Jiang"
-      assert_equal str, stdout[0]
-      assert_equal ver, stdout[1]
-    end
+    # should 'install skewer' do
+    #   @pre.skewer
+    #   cmd = "skewer-0.1.117-linux-x86_64 --help"
+    #   skewer_cmd = Preprocessor::Cmd.new(cmd)
+    #   skewer_cmd.run
+    #   stdout = skewer_cmd.stdout.split("\n")
+    #   str="Skewer (A fast and accurate adapter trimmer for paired-end reads)"
+    #   ver="Version 0.1.117 (updated in July 12, 2014), Author: Hongshan Jiang"
+    #   assert_equal str, stdout[0]
+    #   assert_equal ver, stdout[1]
+    # end
 
     should 'trim reads using skewer' do
       @pre.skewer
