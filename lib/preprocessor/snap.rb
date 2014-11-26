@@ -39,12 +39,10 @@ module Preprocessor
       cmd << " -s 0 1000" # min and max distance between paired-read starts
       cmd << " -H 300000" # max seed hits to consider in paired mode
       cmd << " -h 2000" # max seed hits to consider when reverting to single
-      cmd << " -I"   # ignore read IDs
       cmd << " -d 30" # max edit distance (function of read length?)
       cmd << " -t #{threads}"
       cmd << " -b" # bind threads to cores
       cmd << " -M"  # format cigar string
-      # cmd << " -sa" # keep all alignments, don't discard 0x100
       cmd
     end
 
@@ -54,12 +52,10 @@ module Preprocessor
       cmd << " -o #{@outdir}/#{@bam}"
       cmd << " -H 300000" # max seed hits to consider in paired mode
       cmd << " -h 2000" # max seed hits to consider when reverting to single
-      cmd << " -I"   # ignore read IDs
       cmd << " -d 30" # max edit distance (function of read length?)
       cmd << " -t #{threads}"
       cmd << " -b" # bind threads to cores
       cmd << " -M"  # format cigar string
-      # cmd << " -sa" # keep all alignments, don't discard 0x100
       cmd
     end
 

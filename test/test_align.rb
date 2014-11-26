@@ -21,8 +21,6 @@ class TestAlign < Test::Unit::TestCase
       # delete output folder
       cmd = "rm -rf #{@output}"
       `#{cmd}`
-      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      bindir = File.join(gem_dir, "bin")
     end
 
     should 'run bowtie2' do

@@ -77,10 +77,13 @@ module Preprocessor
     def stats file
       @file_histo = Array.new(101,0) if !@file_histo
       file = File.open(file[:current])
-      name = file.readline
-      seq = file.readline
-      plus = file.readline
-      qual = file.readline
+      name = file.readline rescue nil
+      seq = file.readline rescue nil
+      plus = file.readline rescue nil
+      qual = file.readline rescue nil
+      if !name
+        puts "error: #{file} is empty"
+      end
       while name
         @file_histo[seq.chomp.length] ||= 0
         @file_histo[seq.chomp.length] += 1
