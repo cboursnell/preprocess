@@ -4,7 +4,6 @@
 ## mrna pipeline
 ##
 ## can run any of these
-##   facs
 ##   trimmomatic
 ##   skewer
 ##   bayeshammer

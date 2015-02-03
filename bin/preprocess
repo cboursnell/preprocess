@@ -97,10 +97,10 @@ end
 
 if opts.left and opts.right and !opts.continue
   opts.left.split(",").each do |file|
-    Trollop::die :input, "must exist" if !File.exist?(file)
+    Trollop::die "#{file} must exist" if !File.exist?(file)
   end
   opts.right.split(",").each do |file|
-    Trollop::die :input, "must exist" if !File.exist?(file)
+    Trollop::die "#{file} must exist" if !File.exist?(file)
   end
 elsif opts.continue
 else
