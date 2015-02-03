@@ -75,7 +75,7 @@ module Preprocessor
       rbase = File.basename(right[:current])
       @bam = "#{lbase}.#{rbase}.#{@index_name}.bam"
 
-      unless File.exists? @bam
+      unless File.exists? "#{@outdir}/#{@bam}"
         snapcmd = build_paired_cmd(left, right, threads)
         runner = Cmd.new snapcmd
         runner.run
@@ -84,6 +84,8 @@ module Preprocessor
           raise RuntimeError.new("Snap failed\n#{runner.stderr}")
         end
       end
+      left[:sam] = @bam
+      right[:sam] = @bam
     end
 
     def build_index file, threads

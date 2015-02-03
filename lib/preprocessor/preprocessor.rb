@@ -9,9 +9,14 @@
 ##   bayeshammer
 ##   khmer
 ##   bbnorm
+##   bowtie2
+##   snap
+##   express
+##   salmon
 ##   more to come!
 ##
 ## created: 2014-05-27 Chris Boursnell (cmb211@cam.ac.uk)
+## last updated: 2015-02-03
 ##
 ## # # # # # # # # # # # # #
 
@@ -21,6 +26,7 @@ require 'json'
 require 'zlib'
 require 'fixwhich'
 require 'bindeps'
+require 'fileutils'
 
 module Preprocessor
 
@@ -36,7 +42,7 @@ module Preprocessor
       @filter = "http://zenodo.org/record/11091/files/rRNAplants.fa"
       @khmer = Which.which("normalize-by-median.py").first
       @output_dir = output ? File.expand_path(output) : Dir.pwd
-      Dir.mkdir(@output_dir) unless Dir.exist?(@output_dir)
+      FileUtils.mkdir_p(@output_dir) unless Dir.exist?(@output_dir)
       @memory = memory
       @threads = threads
       @data = []
@@ -301,6 +307,7 @@ module Preprocessor
     def salmon(reference)
       salmon = Salmon.new(@output_dir, @threads, reference)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        puts "Quantifying #{left[:current]}" if @verbose
         salmon.run(left, right)
         left[:processed][:expression] = "salmon"
         right[:processed][:expression] = "salmon"

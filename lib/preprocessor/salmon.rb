@@ -23,7 +23,7 @@ module Preprocessor
 
       cmd = "#{@salmon} quant"
       cmd << " --libType IU"
-      cmd << " --alignments #{sam}"
+      cmd << " --alignments #{@outdir}/#{sam}"
       cmd << " --targets #{@reference}"
       cmd << " --threads #{@threads}"
       cmd << " --sampleOut"

@@ -32,11 +32,11 @@ module Preprocessor
     def run left, right=nil
       cmd =""
       if right # paired
-        outfile_left = "#{@outdir}/#{left[:type]}_#{left[:rep]}-#{left[:pair]}.t.fq"
-        outfileU_left = "#{@outdir}/#{left[:type]}_#{left[:rep]}-#{left[:pair]}.tU.fq"
+        outfile_left = "#{@outdir}/#{left[:name]}_#{left[:type]}_#{left[:rep]}-#{left[:pair]}.t.fq"
+        outfileU_left = "#{@outdir}/#{left[:name]}_#{left[:type]}_#{left[:rep]}-#{left[:pair]}.tU.fq"
 
-        outfile_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.t.fq"
-        outfileU_right = "#{@outdir}/#{right[:type]}_#{right[:rep]}-#{right[:pair]}.tU.fq"
+        outfile_right = "#{@outdir}/#{right[:name]}_#{right[:type]}_#{right[:rep]}-#{right[:pair]}.t.fq"
+        outfileU_right = "#{@outdir}/#{right[:name]}_#{right[:type]}_#{right[:rep]}-#{right[:pair]}.tU.fq"
 
         cmd << "#{@java} -jar #{@path} PE "
         cmd << " -phred#{self.detect_phred left[:current]}"
@@ -54,7 +54,7 @@ module Preprocessor
         right[:unpaired] = outfileU_right
 
       else # unpaired
-        outfile_left = "#{@outdir}/#{left[:type]}_#{left[:rep]}.t.fq"
+        outfile_left = "#{@outdir}/#{left[:name]}_#{left[:type]}_#{left[:rep]}.t.fq"
         cmd << "#{@java} -jar #{@path} SE "
         cmd << " -phred#{self.detect_phred left[:current]}"
         cmd << " -threads #{@threads}"
@@ -65,11 +65,15 @@ module Preprocessor
         cmd << " MINLEN:#{@minlen}"
         left[:current] = outfile_left
       end
-      trim_cmd = Cmd.new(cmd)
-      trim_cmd.run
-      if !trim_cmd.status.success?
-        msg = "trimmomatic failed\n#{trim_cmd.stdout}\n#{trim_cmd.stderr}"
-        raise RuntimeError.new(msg)
+      if !File.exist?(outfile_left)
+        trim_cmd = Cmd.new(cmd)
+        trim_cmd.run
+        if !trim_cmd.status.success?
+          msg = "trimmomatic failed\n#{trim_cmd.stdout}\n#{trim_cmd.stderr}"
+          raise RuntimeError.new(msg)
+        end
+      else
+        puts "#{outfile_left} already exists"
       end
     end
 
@@ -83,13 +87,15 @@ module Preprocessor
       if !name
         puts "error: #{file} is empty"
       end
-      while name
+      count = 0
+      while name and count < 100_000
         @file_histo[seq.chomp.length] ||= 0
         @file_histo[seq.chomp.length] += 1
         name = file.readline rescue nil
         seq = file.readline rescue nil
         plus = file.readline rescue nil
         qual = file.readline rescue nil
+        count += 1
       end
       file.close
     end
