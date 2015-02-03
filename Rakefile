@@ -34,5 +34,11 @@ Rake::TestTask.new do |t|
   t.test_files = ['test/test_sra.rb']
 end
 
+Rake::TestTask.new do |t|
+  t.name = :quant
+  t.libs << 'test'
+  t.test_files = ['test/test_quantify.rb']
+end
+
 desc "Run tests"
 task :default => :test

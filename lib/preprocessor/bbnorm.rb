@@ -1,6 +1,5 @@
-require 'which'
+require 'fixwhich'
 require 'bindeps'
-include Which
 
 module Preprocessor
 
@@ -19,7 +18,7 @@ module Preprocessor
       @mindepth = mindepth
       @minkmers = minkmers
 
-      @java = which('java').first
+      @java = Which.which('java').first
       raise RuntimeError.new("java not installed") if !@java
       version = Cmd.new("java -version")
       version.run

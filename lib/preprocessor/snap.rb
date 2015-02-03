@@ -5,10 +5,11 @@ module Preprocessor
 
   class Snap
 
-    def initialize(outdir, threads, reference)
+    def initialize(outdir, threads, reference, expression)
       @outdir = outdir
       @threads = threads
       @reference = File.expand_path(reference)
+      @expression = expression
 
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'snap.yaml')
@@ -43,6 +44,10 @@ module Preprocessor
       cmd << " -t #{threads}"
       cmd << " -b" # bind threads to cores
       cmd << " -M"  # format cigar string
+      if @expression
+        cmd << " -om 5" # Output multiple alignments. extra edit distance
+        cmd << " -omax 20" # max alignments per pair/read
+      end
       cmd
     end
 
@@ -56,6 +61,10 @@ module Preprocessor
       cmd << " -t #{threads}"
       cmd << " -b" # bind threads to cores
       cmd << " -M"  # format cigar string
+      if @expression
+        cmd << " -om 5" # Output multiple alignments. extra edit distance
+        cmd << " -omax 20" # max alignments per pair/read
+      end
       cmd
     end
 

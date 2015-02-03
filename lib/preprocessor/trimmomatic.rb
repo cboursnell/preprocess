@@ -1,6 +1,5 @@
 require 'bindeps'
-require 'which'
-include Which
+require 'fixwhich'
 
 module Preprocessor
 
@@ -20,13 +19,13 @@ module Preprocessor
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'trimmomatic.yaml')
       Bindeps.require gem_deps
-      paths = which('trimmomatic-0.32.jar')
+      paths = Which.which('trimmomatic-0.32.jar')
       if paths.empty?
         @path = File.join(ENV['GEM_HOME'], 'bin', 'trimmomatic-0.32.jar')
       else
         @path = paths.first
       end
-      @java = which('java').first
+      @java = Which.which('java').first
       raise RuntimeError.new("java not installed") if !@java
     end
 

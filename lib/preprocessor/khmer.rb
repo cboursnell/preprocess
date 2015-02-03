@@ -1,6 +1,5 @@
 require 'bindeps'
-require 'which'
-include Which
+require 'fixwhich'
 
 module Preprocessor
 
@@ -14,7 +13,7 @@ module Preprocessor
       @cutoff = cutoff
       @tables = tables
       @min_table_size = ((@memory/@tables)*1e9).to_i
-      @khmer = which("normalize-by-median.py").first
+      @khmer = Which.which("normalize-by-median.py").first
       if !@khmer
         msg = "khmer not installed"
         raise RuntimeError.new(msg)

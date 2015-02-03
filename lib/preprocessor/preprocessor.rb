@@ -19,9 +19,8 @@ require 'rubygems'
 require 'set'
 require 'json'
 require 'zlib'
-require 'which'
+require 'fixwhich'
 require 'bindeps'
-include Which
 
 module Preprocessor
 
@@ -35,7 +34,7 @@ module Preprocessor
     def initialize(output, verbose, threads=1, memory=4)
       @verbose = verbose
       @filter = "http://zenodo.org/record/11091/files/rRNAplants.fa"
-      @khmer = which("normalize-by-median.py").first
+      @khmer = Which.which("normalize-by-median.py").first
       @output_dir = output ? File.expand_path(output) : Dir.pwd
       Dir.mkdir(@output_dir) unless Dir.exist?(@output_dir)
       @memory = memory
@@ -259,7 +258,7 @@ module Preprocessor
       end
     end
 
-    def bowtie2(reference, expression)
+    def bowtie2(reference, expression=false)
       aligner = Bowtie2.new(@output_dir, @threads, reference, expression)
       if @paired==1
         @data.each_with_index do |left, i|
@@ -283,8 +282,8 @@ module Preprocessor
       end
     end
 
-    def snap(reference)
-      aligner = Snap.new(@output_dir, @threads, reference)
+    def snap(reference, expression=false)
+      aligner = Snap.new(@output_dir, @threads, reference, expression)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
         puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
         aligner.run(left, right)
@@ -296,6 +295,28 @@ module Preprocessor
       end
       File.open(File.join(@output_dir, "snap.stats"), "wb") do |out|
         out.write aligner.get_stats
+      end
+    end
+
+    def salmon(reference)
+      salmon = Salmon.new(@output_dir, @threads, reference)
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        salmon.run(left, right)
+        left[:processed][:expression] = "salmon"
+        right[:processed][:expression] = "salmon"
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
+      end
+      results = "#{@output_dir}/salmon_results"
+      File.open(results, "wb") do |out|
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          name = left[:name]
+          type = left[:type]
+          rep = left[:rep]
+          file = left[:salmon]
+          out.write("#{name},#{type},#{rep},#{file}\n")
+        end
       end
     end
 

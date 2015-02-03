@@ -1,12 +1,11 @@
 require 'bindeps'
 require 'csv'
+require 'fixwhich'
 
 module Preprocessor
 
   class Express
 
-    require 'which'
-    include Which
 
     def initialize(outdir, threads, reference)
       @outdir = outdir
@@ -16,7 +15,7 @@ module Preprocessor
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'express.yaml')
       Bindeps.require gem_deps
-      @express = which('express').first
+      @express = Which.which('express').first
     end
 
     def run left, right=nil

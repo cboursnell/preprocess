@@ -47,11 +47,15 @@ class TestAlign < Test::Unit::TestCase
 
     should 'run snap' do
       reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
-      @pre.snap(reference)
+      @pre.snap(reference, false)
       assert File.exist?("#{@output}/A-1-1.fq.A-1-2.fq.reference.bam")
       assert File.exist?("#{@output}/A-2-1.fq.A-2-2.fq.reference.bam")
       assert File.exist?("#{@output}/snap.stats")
     end
+
+    # TODO:
+    # should 'run snap with single reads' do
+    # end
 
   end
 end

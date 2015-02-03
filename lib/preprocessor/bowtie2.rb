@@ -5,8 +5,7 @@ module Preprocessor
 
   class Bowtie2
 
-    require 'which'
-    include Which
+    require 'fixwhich'
 
     def initialize(outdir, threads, reference, expression)
       @outdir = outdir
@@ -17,8 +16,8 @@ module Preprocessor
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'bowtie2.yaml')
       Bindeps.require gem_deps
-      @build = which('bowtie2-build').first
-      @bowtie = which('bowtie2').first
+      @build = Which.which('bowtie2-build').first
+      @bowtie = Which.which('bowtie2').first
       @stats={:reads=>0,:paired_reads=>0,:unaligned=>0,:unique=>0,:multi=>0}
     end
 
