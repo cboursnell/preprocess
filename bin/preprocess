@@ -20,6 +20,8 @@ require 'preprocessor'
 require 'set'
 require 'json'
 
+ARGV[0] = "--help" if ARGV.length() == 0
+
 opts = Trollop::options do
   version "v0.3"
   banner <<-EOS
@@ -58,7 +60,7 @@ opts = Trollop::options do
       :type => String
   opt :reference, "Fasta file of reference sequence. Used by the aligner. Ignored otherwise",
       :type => String
-  opt :expression, "Which expression quantification to use (none|express)",
+  opt :expression, "Which expression quantification to use (none|express|salmon)",
       :default => "none",
       :type => String
   opt :minlen, "The minimum length for trimmed sequences",
@@ -126,8 +128,8 @@ if opts.expression=="none"
 else
   if opts.aligner=="none"
     Trollop::die :aligner, "must be set if you want to calculate expression"
-    expression = true
   end
+  expression = true
 end
 
 preprocessor = Preprocessor::Preprocessor.new(opts.output, opts.verbose,
@@ -208,6 +210,8 @@ else
   if opts.expression == "none"
   elsif opts.expression == "express"
     preprocessor.express(opts.reference)
+  elsif opts.expression == "salmon"
+    preprocessor.salmon(opts.reference)
   else
     raise RuntimeError.new("#{opts.expression} is not a valid input to expression")
   end
