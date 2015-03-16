@@ -132,6 +132,10 @@ else
   expression = true
 end
 
+if opts.correction == "hammer" and opts.memory <= 4
+  abort "This is probably not enough memory to run bayeshammer"
+end
+
 preprocessor = Preprocessor::Preprocessor.new(opts.output, opts.verbose,
                                                  opts.threads, opts.memory)
 

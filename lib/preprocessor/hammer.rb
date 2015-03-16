@@ -92,6 +92,7 @@ module Preprocessor
     def stats file
       # open :prehammer and :current and compare bases
       # hopefully the reads will be the same length
+      # create a list of base position where corrections were made
       @errors = Array.new(100,0)
       before = File.open(file[:prehammer])
       after = File.open(file[:current])
@@ -112,6 +113,7 @@ module Preprocessor
         if seq1 and seq1.length == seq2.length
           (0..seq1.length-1).each do |i|
             if seq1[i]!=seq2[i]
+              @errors[i] ||= 0
               @errors[i] += 1
             end
           end
