@@ -1,6 +1,9 @@
+
+require File.expand_path('../lib/preprocessor/version', __FILE__)
+
 Gem::Specification.new do |gem|
   gem.name          = 'preprocessor'
-  gem.version       = '0.6.0'
+  gem.version       = Preprocessor::VERSION::STRING.dup
   gem.date          = '2014-07-25'
   gem.summary       = "Preprocess mRNA reads"
   gem.description   = "See summary"
@@ -14,7 +17,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'fixwhich', '~> 1.0', '>= 1.0.2'
   gem.add_dependency 'bio', '~> 1.4', '>= 1.4.3'
-  gem.add_dependency 'bindeps', '~> 1.0', '>= 1.0.3'
+  gem.add_dependency 'bindeps', '~> 1.1', '>= 1.1.2'
   gem.add_dependency 'trollop', '~> 2.0', '>= 2.0'
 
   gem.add_development_dependency 'rake', '~> 10.3', '>= 10.3.2'

@@ -23,7 +23,7 @@ require 'json'
 ARGV[0] = "--help" if ARGV.length() == 0
 
 opts = Trollop::options do
-  version "v0.3"
+  version Preprocessor::VERSION::STRING.dup
   banner <<-EOS
   mRna preprocessor pipeline
 
