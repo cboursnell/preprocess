@@ -95,6 +95,7 @@ module Preprocessor
       # hopefully the reads will be the same length
       # create a list of base position where corrections were made
       @errors = Array.new(100,0)
+      @error_qualities = []
       before = File.open(file[:prehammer])
       after = File.open(file[:current])
       name1 = before.readline
@@ -102,7 +103,11 @@ module Preprocessor
       while name1 and name2
         seq1 = before.readline
         seq2 = after.readline
-        2.times { before.readline; after.readline }
+        before.readline # plus
+        after.readline # plus
+        qual1 = before.readline
+        qual2 = after.readline
+
         while name1 and name1 != name2
           # :current is always going to be a subset of :prehammer
           # so just scan forwards in :prehammer until we find
@@ -116,6 +121,9 @@ module Preprocessor
             if seq1[i]!=seq2[i]
               @errors[i] ||= 0
               @errors[i] += 1
+              @error_qualities[i] ||= []
+              @error_qualities[i][qual[i].ord] ||= 0
+              @error_qualities[i][qual[i].ord] += 1
             end
           end
         end
@@ -126,6 +134,16 @@ module Preprocessor
     end
 
     def get_stats
+      File.open("quality_and_errors.txt", "wb") do |out|
+        @error_qualities.each do |list|
+          str = ""
+          (32..104).each do |i|
+            str << "#{list[i]}"
+          end
+          str << "\n"
+          out.write str
+        end
+      end
       tot = @errors.reduce(0) { |sum, c| sum += c }
       str = ""
       @errors.each_with_index do |count, length|
