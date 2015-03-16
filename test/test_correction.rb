@@ -25,13 +25,14 @@ class TestCorrection < Test::Unit::TestCase
       bindir = File.join(gem_dir, "bin")
       cmd = "rm #{bindir}/trimmomatic-0.32.jar"
       `#{cmd}` if File.exist?(File.join(bindir, "trimmomatic-0.32.jar"))
-      cmd = "rm -rf #{bindir}/SPAdes-3.1.0-Linux"
-      `#{cmd}` if Dir.exist?(File.join(bindir, "SPAdes-3.1.0-Linux"))
+      cmd = "rm -rf #{bindir}/SPAdes-3.5.0-Linux"
+      `#{cmd}` if Dir.exist?(File.join(bindir, "SPAdes-3.5.0-Linux"))
       cmd = "rm #{bindir}/spades.tar.gz"
       `#{cmd}` if File.exist?(File.join(bindir, "spades.tar.gz"))
     end
 
     should 'hammer reads' do
+      puts @output
       @pre.hammer
       files = []
       files << "#{@output}/hammer-test-A-1/corrected/A-1-1.00.0_0.cor.fastq"
@@ -46,22 +47,22 @@ class TestCorrection < Test::Unit::TestCase
     end
 
     should 'hammer trimmed reads' do
+      puts @output
       @pre.trimmomatic
       @pre.hammer
       files = []
-      files << "#{@output}/hammer-test-A-1/corrected/A_1-1.t.00.0_0.cor.fastq"
-      files << "#{@output}/hammer-test-A-1/corrected/A_1-2.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-1/corrected/test_A_1-1.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-1/corrected/test_A_1-2.t.00.0_0.cor.fastq"
       files << "#{@output}/hammer-test-A-1/left_unpaired.fq"
       files << "#{@output}/hammer-test-A-1/right_unpaired.fq"
-      files << "#{@output}/hammer-test-A-2/corrected/A_2-1.t.00.0_0.cor.fastq"
-      files << "#{@output}/hammer-test-A-2/corrected/A_2-2.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-2/corrected/test_A_2-1.t.00.0_0.cor.fastq"
+      files << "#{@output}/hammer-test-A-2/corrected/test_A_2-2.t.00.0_0.cor.fastq"
       files << "#{@output}/hammer-test-A-2/left_unpaired.fq"
       files << "#{@output}/hammer-test-A-2/right_unpaired.fq"
       files.each do |f|
         assert File.exist?(f), "file #{f} not found"
       end
     end
-
 
   end
 end

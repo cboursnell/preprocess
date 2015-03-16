@@ -10,12 +10,10 @@ module Preprocessor
       @memory = memory
 
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      spades = File.join(gem_dir, 'bin', 'SPAdes-3.1.0-Linux',
-                         'bin', 'spades.py')
-      if !File.exist?(spades)
-        wget_cmd = "wget http://spades.bioinf.spbau.ru/release3.1.0/"
-        wget_cmd << "SPAdes-3.1.0-Linux.tar.gz -O "
-        wget_cmd << "#{File.join(gem_dir,"bin","spades.tar.gz")}"
+      @spades = File.join(gem_dir, 'bin', 'SPAdes-3.5.0-Linux', 'bin', 'spades.py')
+      if !File.exist?(@spades)
+        url = "http://spades.bioinf.spbau.ru/release3.5.0/SPAdes-3.5.0-Linux.tar.gz"
+        wget_cmd = "wget #{url} -O #{File.join(gem_dir,"bin","spades.tar.gz")}"
 
         archive = File.join(gem_dir,"bin","spades.tar.gz")
         tar_cmd = "tar xzf #{archive}"
@@ -37,22 +35,25 @@ module Preprocessor
           raise RuntimeError.new msg
         end
       end
+
     end
 
     def run left, right=nil
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      spades = File.join(gem_dir, 'bin', 'SPAdes-3.1.0-Linux',
-                         'bin', 'spades.py')
       dir = File.join(@outdir,
                       "hammer-#{left[:name]}-#{left[:type]}-#{left[:rep]}")
-      cmd = "#{spades} -1 #{left[:current]} -2 #{right[:current]}"
-      cmd << " --pe1-s #{left[:unpaired]}" if left[:unpaired]
-      cmd << " --pe2-s #{right[:unpaired]}" if right[:unpaired]
-      cmd << " --only-error-correction"
-      cmd << " --disable-gzip-output"
-      cmd << " -t #{@threads}"
-      cmd << " -m #{@memory}"
-      cmd << " -o #{dir}"
+      cmd = "#{@spades} "
+      cmd << "-1 #{left[:current]} "
+      cmd << "-2 #{right[:current]} "
+      cmd << "--pe1-s #{left[:unpaired]} " if left[:unpaired]
+      cmd << "--pe2-s #{right[:unpaired]} " if right[:unpaired]
+      cmd << "--only-error-correction "
+      cmd << "--disable-gzip-output "
+      cmd << "-t #{@threads} "
+      cmd << "-m #{@memory} "
+      cmd << "-o #{dir} "
+      cmd << "--phred-offset #{detect_phred(left[:current])} "
+      puts cmd
       hammer_cmd = Cmd.new(cmd)
       hammer_cmd.run
       if !hammer_cmd.status.success?
@@ -131,6 +132,35 @@ module Preprocessor
         str << "#{length}\t#{count}\t#{(100 * count / tot.to_f).round(2)}%\n"
       end
       str
+    end
+
+    def detect_phred filename
+      file = File.open(filename)
+      c = 0
+      scores={}
+      while c < 4000
+        line = file.readline
+        if c % 4 == 3
+          line.chars.each do |i|
+            ascii_key = i.ord
+            scores[ascii_key] ||= 0
+            scores[ascii_key] += 1
+          end
+        end
+        c += 1
+      end
+      max = scores.keys.max
+      min = scores.keys.min
+      phred = -1
+      if max <= 74
+        phred = 33
+      elsif max <= 105
+        phred = 64
+      else
+        raise RuntimeError.new("Couldn't determine phred formatting")
+      end
+      file.close
+      return phred
     end
 
   end
