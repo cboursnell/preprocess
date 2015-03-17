@@ -168,9 +168,9 @@ module Preprocessor
     end
 
     def trimmomatic(minlen=40, windowsize=4, quality=15,
-                    trailing=15, leading=15, mismatches=2)
+                    trailing=15, leading=15, mismatches=2, avgqual=30)
       trimmer = Trimmomatic.new(@output_dir, @threads, minlen, windowsize,
-                                quality, trailing, leading, mismatches)
+                                quality, trailing, leading, mismatches, avgqual)
 
       if @paired == 1
         @data.each_with_index do |left, i|

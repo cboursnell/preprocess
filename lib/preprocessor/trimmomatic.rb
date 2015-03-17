@@ -6,7 +6,7 @@ module Preprocessor
   class Trimmomatic
 
     def initialize(outdir, threads, minlen, windowsize, quality, trailing,
-                   leading, mismatches)
+                   leading, mismatches, avgqual)
       @outdir = outdir
       @threads = threads
       @minlen = minlen
@@ -15,6 +15,7 @@ module Preprocessor
       @trailing = trailing
       @leading = leading
       @mismatches = mismatches
+      @average_quality = avgqual
 
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'trimmomatic.yaml')
@@ -47,6 +48,7 @@ module Preprocessor
         cmd << " LEADING:#{@leading} TRAILING:#{@trailing}"
         cmd << " SLIDINGWINDOW:#{@windowsize}:#{@quality}"
         cmd << " MINLEN:#{@minlen}"
+        cmd << " AVGQUAL:#{@average_quality}"
 
         left[:current] = outfile_left
         left[:unpaired] = outfileU_left
@@ -63,6 +65,7 @@ module Preprocessor
         cmd << " LEADING:#{@leading} TRAILING:#{@trailing}"
         cmd << " SLIDINGWINDOW:#{@windowsize}:#{@quality}"
         cmd << " MINLEN:#{@minlen}"
+        cmd << " AVGQUAL:#{@average_quality}"
         left[:current] = outfile_left
       end
       if !File.exist?(outfile_left)
