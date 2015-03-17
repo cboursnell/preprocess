@@ -82,25 +82,25 @@ module Preprocessor
 
     def stats file
       @file_histo = Array.new(101,0) if !@file_histo
-      file = File.open(file[:current])
-      name = file.readline rescue nil
-      seq = file.readline rescue nil
-      plus = file.readline rescue nil
-      qual = file.readline rescue nil
+      fh = File.open(file[:current])
+      name = fh.readline rescue nil
+      seq = fh.readline rescue nil
+      plus = fh.readline rescue nil
+      qual = fh.readline rescue nil
       if !name
-        puts "error: #{file} is empty"
+        puts "error: #{file[:current]} is empty"
       end
       count = 0
       while name and count < 100_000
         @file_histo[seq.chomp.length] ||= 0
         @file_histo[seq.chomp.length] += 1
-        name = file.readline rescue nil
-        seq = file.readline rescue nil
-        plus = file.readline rescue nil
-        qual = file.readline rescue nil
+        name = fh.readline rescue nil
+        seq = fh.readline rescue nil
+        plus = fh.readline rescue nil
+        qual = fh.readline rescue nil
         count += 1
       end
-      file.close
+      fh.close
     end
 
     def get_stats
