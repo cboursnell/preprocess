@@ -122,8 +122,8 @@ module Preprocessor
               @errors[i] ||= 0
               @errors[i] += 1
               @error_qualities[i] ||= []
-              @error_qualities[i][qual[i].ord] ||= 0
-              @error_qualities[i][qual[i].ord] += 1
+              @error_qualities[i][qual1[i].ord] ||= 0
+              @error_qualities[i][qual1[i].ord] += 1
             end
           end
         end
