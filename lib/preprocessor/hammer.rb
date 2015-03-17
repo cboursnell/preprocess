@@ -103,8 +103,8 @@ module Preprocessor
       while name1 and name2
         seq1 = before.readline
         seq2 = after.readline
-        before.readline # plus
-        after.readline # plus
+        plus1 = before.readline
+        plus2 = after.readline
         qual1 = before.readline
         qual2 = after.readline
 
@@ -114,7 +114,8 @@ module Preprocessor
           # a read with a matching name
           name1 = before.readline rescue nil
           seq1 = before.readline rescue nil
-          2.times { before.readline }
+          plus1 = before.readline rescue nil
+          qual1 = before.readline rescue nil
         end
         if seq1 and seq1.length == seq2.length
           (0..seq1.length-1).each do |i|
@@ -134,14 +135,17 @@ module Preprocessor
     end
 
     def get_stats
-      File.open("quality_and_errors.txt", "wb") do |out|
-        @error_qualities.each do |list|
-          str = ""
-          (32..104).each do |i|
-            str << "#{list[i]}"
+      File.open("#{@outdir}/quality_and_errors.txt", "wb") do |out|
+        out.write "base\t#{(32..105).reduce([]) {|list, i| list << i}.join("\t")}\n"
+        @error_qualities.each_with_index do |list, index|
+          unless list.nil?
+            row = []
+            row << index
+            (32..105).each do |i|
+              list[i].nil? ? row << 0 : row << list[i]
+            end
+            out.write "#{row.join("\t")}\n"
           end
-          str << "\n"
-          out.write str
         end
       end
       tot = @errors.reduce(0) { |sum, c| sum += c }
