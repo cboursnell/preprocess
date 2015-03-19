@@ -43,8 +43,8 @@ module Preprocessor
       @khmer = Which.which("normalize-by-median.py").first
       @output_dir = output ? File.expand_path(output) : Dir.pwd
       FileUtils.mkdir_p(@output_dir) unless Dir.exist?(@output_dir)
-      @memory = memory
-      @threads = threads
+      memory.nil? ? @memory = 8 : @memory = memory
+      threads.nil? ? @threads = 1 : @threads = threads
       @data = []
     end
 
