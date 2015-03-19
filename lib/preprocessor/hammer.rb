@@ -55,10 +55,12 @@ module Preprocessor
       cmd << "--phred-offset #{detect_phred(left[:current])} "
       puts cmd
       hammer_cmd = Cmd.new(cmd)
-      hammer_cmd.run
-      if !hammer_cmd.status.success?
-        msg = "BayesHammer failed\n#{hammer_cmd.stdout}\n#{hammer_cmd.stderr}"
-        raise RuntimeError.new(msg)
+      unless Dir.exist? dir
+        hammer_cmd.run
+        if !hammer_cmd.status.success?
+          msg = "BayesHammer failed\n#{hammer_cmd.stdout}\n#{hammer_cmd.stderr}"
+          raise RuntimeError.new(msg)
+        end
       end
       yaml = YAML.load_file("#{dir}/corrected/corrected.yaml")
       cat_cmd = "cat "
