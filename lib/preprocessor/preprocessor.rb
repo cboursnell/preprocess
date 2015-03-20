@@ -225,12 +225,12 @@ module Preprocessor
           f.write(JSON.pretty_generate(@data))
         end
       end
-      stats = "hammer.stats"
+      stats = File.join(@output_dir, "hammer.stats")
       unless File.exist?(stats)
         @data.each do |file|
           correcter.stats file
         end
-        File.open(File.join(@output_dir, stats), "wb") do |out|
+        File.open(stats, "wb") do |out|
           out.write correcter.get_stats
         end
       end
