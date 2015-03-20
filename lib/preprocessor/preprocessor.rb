@@ -225,13 +225,15 @@ module Preprocessor
           f.write(JSON.pretty_generate(@data))
         end
       end
-      @data.each do |file|
-        correcter.stats file
+      stats = "hammer.stats"
+      unless File.exist?(stats)
+        @data.each do |file|
+          correcter.stats file
+        end
+        File.open(File.join(@output_dir, stats), "wb") do |out|
+          out.write correcter.get_stats
+        end
       end
-      File.open(File.join(@output_dir, "hammer.stats"), "wb") do |out|
-        out.write correcter.get_stats
-      end
-
     end
 
     def khmer(kmer=23, cutoff=20, tables=4)

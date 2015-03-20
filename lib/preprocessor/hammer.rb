@@ -137,16 +137,19 @@ module Preprocessor
     end
 
     def get_stats
-      File.open("#{@outdir}/quality_and_errors.txt", "wb") do |out|
-        out.write "base\t#{(32..105).reduce([]) {|list, i| list << i}.join("\t")}\n"
-        @error_qualities.each_with_index do |list, index|
-          unless list.nil?
-            row = []
-            row << index
-            (32..105).each do |i|
-              list[i].nil? ? row << 0 : row << list[i]
+      qe = "#{@outdir}/quality_and_errors.txt"
+      unless File.exist?(qe)
+        File.open(qe, "wb") do |out|
+          out.write "base\t#{(32..105).reduce([]) {|list, i| list << i}.join("\t")}\n"
+          @error_qualities.each_with_index do |list, index|
+            unless list.nil?
+              row = []
+              row << index
+              (32..105).each do |i|
+                list[i].nil? ? row << 0 : row << list[i]
+              end
+              out.write "#{row.join("\t")}\n"
             end
-            out.write "#{row.join("\t")}\n"
           end
         end
       end
