@@ -22,8 +22,11 @@ module Preprocessor
       raise RuntimeError.new("java not installed") if !@java
       version = Cmd.new("java -version")
       version.run
-      version_number = version.stderr.split("\n").first
-      version_number = version_number.split(".")[0..1].join(".").to_f
+      version_number = 0
+      if version.stderr =~ /([0-9._\-]+)/
+        version_number = $1
+        version_number = version_number.split(".")[0..1].join(".").to_f
+      end
       if version_number and version_number < 1.7
         msg = "bbnorm requires java version 1.7 or higher\n"
         msg << "You have #{version_number}"
