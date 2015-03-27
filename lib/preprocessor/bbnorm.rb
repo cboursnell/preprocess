@@ -37,8 +37,8 @@ module Preprocessor
 
     def install
       dl = "#{@gem_dir}/bin/bbmap.tar.gz"
-      cmd = "wget http://kent.dl.sourceforge.net/project/bbmap/"
-      cmd << "BBMap_33.08_java7.tar.gz -O #{dl}"
+      cmd = "wget http://heanet.dl.sourceforge.net/project/bbmap/"
+      cmd << "BBMap_34.72.tar.gz -O #{dl}"
       wget = Cmd.new(cmd)
       wget.run
       if wget.status.success?
@@ -60,9 +60,14 @@ module Preprocessor
         cmd = "#{@bbnorm} "
         cmd << "in=#{left[:current]} "
         cmd << "in2=#{right[:current]} "
-        name = "#{left[:name]}-#{left[:type]}-#{left[:rep]}.bbnorm.fq"
-        outfile = File.join(@outdir, name) # interleaved output of left and right
-        cmd << "out=#{outfile} "
+        leftout = "#{left[:name]}-#{left[:type]}-#{left[:rep]}"
+        leftout << "_#{left[:pair]}.bbnorm.fq"
+        rightout = "#{right[:name]}-#{right[:type]}-#{right[:rep]}"
+        rightout << "_#{right[:pair]}.bbnorm.fq"
+        leftout = File.join(@outdir, leftout)
+        rightout = File.join(@outdir, rightout)
+        cmd << "out=#{leftout} "
+        cmd << "out2=#{rightout} "
         cmd << "k=#{@k} "
         cmd << "hashes=#{@tables} "
         cmd << "bits=#{@bits} "
@@ -78,55 +83,9 @@ module Preprocessor
           msg << "#{norm.stdout}\n#{norm.stderr}"
           raise RuntimeError.new(msg)
         end
-        leftoutput = "#{@outdir}/"
-        leftoutput << "#{left[:name]}-#{left[:type]}-"
-        leftoutput << "#{left[:rep]}-#{left[:pair]}.bbnorm.fq"
-        rightoutput = "#{@outdir}/"
-        rightoutput << "#{left[:name]}-#{right[:type]}-"
-        rightoutput << "#{right[:rep]}-#{right[:pair]}.bbnorm.fq"
-        self.deinterleave(outfile, leftoutput, rightoutput)
-        left[:current] = leftoutput
-        right[:current] = rightoutput
+        left[:current] = leftout
+        right[:current] = rightout
       end
-    end
-
-    def deinterleave(file, output_left, output_right)
-      raise RuntimeError.new("Can't find #{file}") if !File.exist?(file)
-      fastq = File.open(file)
-      left = File.open("#{output_left}", "w")
-      right= File.open("#{output_right}", "w")
-
-      name1 = fastq.readline rescue nil
-      seq1 = fastq.readline rescue nil
-      plus1 = fastq.readline rescue nil
-      qual1 = fastq.readline rescue nil
-      name2 = fastq.readline rescue nil
-      seq2 = fastq.readline rescue nil
-      plus2 = fastq.readline rescue nil
-      qual2 = fastq.readline rescue nil
-
-      while name1 != nil and name2 != nil
-        left.write(name1)
-        left.write(seq1)
-        left.write(plus1)
-        left.write(qual1)
-        right.write(name2)
-        right.write(seq2)
-        right.write(plus2)
-        right.write(qual2)
-
-        name1 = fastq.readline rescue nil
-        seq1 = fastq.readline rescue nil
-        plus1 = fastq.readline rescue nil
-        qual1 = fastq.readline rescue nil
-        name2 = fastq.readline rescue nil
-        seq2 = fastq.readline rescue nil
-        plus2 = fastq.readline rescue nil
-        qual2 = fastq.readline rescue nil
-      end
-      fastq.close
-      left.close
-      right.close
     end
 
   end

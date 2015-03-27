@@ -252,7 +252,7 @@ module Preprocessor
       end
     end
 
-    def bbnorm(k=31, target_coverage=20, bits=8, tables=3,
+    def bbnorm(k=31, target_coverage=20, bits=16, tables=3,
                lowthresh=1, mindepth=1, minkmers=15)
       normaliser = BBnorm.new(@output_dir, @threads, @memory,
               k, target_coverage, bits, tables, lowthresh, mindepth, minkmers)
