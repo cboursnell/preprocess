@@ -31,16 +31,27 @@ class TestCorrection < Test::Unit::TestCase
       `#{cmd}` if File.exist?(File.join(bindir, "spades.tar.gz"))
     end
 
+    should 'hammer reads in a batch' do
+      puts @output
+      @pre.hammer_batch
+      list = @pre.data
+      pp list
+      assert_equal({:correction=>"bayeshammer"}, list[0][:processed])
+      assert File.exist?(list[1][:current]), "file exists"
+      assert list[2][:prehammer]
+      assert File.exist?(list[3][:current]), "file exists"
+    end
+
     should 'hammer reads' do
       puts @output
       @pre.hammer
       files = []
       files << "#{@output}/hammer-test-A-1/corrected/A-1-1.00.0_0.cor.fastq"
       files << "#{@output}/hammer-test-A-1/corrected/A-1-2.00.0_0.cor.fastq"
-      files << "#{@output}/hammer-test-A-1/left_unpaired.fq"
+      files << "#{@output}/hammer-test-A-1/single_reads.fq"
       files << "#{@output}/hammer-test-A-2/corrected/A-2-1.00.0_0.cor.fastq"
       files << "#{@output}/hammer-test-A-2/corrected/A-2-2.00.0_0.cor.fastq"
-      files << "#{@output}/hammer-test-A-2/left_unpaired.fq"
+      files << "#{@output}/hammer-test-A-2/single_reads.fq"
       files.each do |f|
         assert File.exist?(f), "file #{f} not found"
       end
@@ -53,12 +64,10 @@ class TestCorrection < Test::Unit::TestCase
       files = []
       files << "#{@output}/hammer-test-A-1/corrected/test_A_1-1.t.00.0_0.cor.fastq"
       files << "#{@output}/hammer-test-A-1/corrected/test_A_1-2.t.00.0_0.cor.fastq"
-      files << "#{@output}/hammer-test-A-1/left_unpaired.fq"
-      files << "#{@output}/hammer-test-A-1/right_unpaired.fq"
+      files << "#{@output}/hammer-test-A-1/single_reads.fq"
       files << "#{@output}/hammer-test-A-2/corrected/test_A_2-1.t.00.0_0.cor.fastq"
       files << "#{@output}/hammer-test-A-2/corrected/test_A_2-2.t.00.0_0.cor.fastq"
-      files << "#{@output}/hammer-test-A-2/left_unpaired.fq"
-      files << "#{@output}/hammer-test-A-2/right_unpaired.fq"
+      files << "#{@output}/hammer-test-A-2/single_reads.fq"
       files.each do |f|
         assert File.exist?(f), "file #{f} not found"
       end

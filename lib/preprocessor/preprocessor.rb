@@ -227,8 +227,29 @@ module Preprocessor
       end
       stats = File.join(@output_dir, "hammer.stats")
       unless File.exist?(stats)
-        @data.each do |file|
-          correcter.stats file
+        @data.each do |info|
+          correcter.stats info
+        end
+        File.open(stats, "wb") do |out|
+          out.write correcter.get_stats
+        end
+      end
+    end
+
+    def hammer_batch
+      correcter = Hammer.new(@output_dir, @threads, @memory)
+      left_files = []
+      right_files = []
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        left_files << left
+        right_files << right
+      end
+      correcter.run_batch left_files, right_files
+
+      stats = File.join(@output_dir, "hammer.stats")
+      unless File.exist?(stats)
+        @data.each do |info|
+          correcter.stats info
         end
         File.open(stats, "wb") do |out|
           out.write correcter.get_stats

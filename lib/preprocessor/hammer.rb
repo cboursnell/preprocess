@@ -40,8 +40,10 @@ module Preprocessor
 
     def run left, right=nil
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      dir = File.join(@outdir,
-                      "hammer-#{left[:name]}-#{left[:type]}-#{left[:rep]}")
+      dir = "hammer-#{left[:name]}-"
+      dir << "#{left[:type]}-" if left[:name]!=left[:type]
+      dir << "#{left[:rep]}"
+      dir = File.join(@outdir, dir)
       cmd = "#{@spades} "
       cmd << "-1 #{left[:current]} "
       cmd << "-2 #{right[:current]} "
@@ -68,37 +70,99 @@ module Preprocessor
       left[:current] = yaml[0]["left reads"][0]
       right[:current] = yaml[0]["right reads"][0]
 
-      if yaml[0] and yaml[0]["single reads"]
-        yaml[0]["single reads"].each do |single|
-          cat_cmd << " #{single} "
+      yaml.each do |item|
+        if item.key?("single reads")
+          cat_cmd << "#{item["single reads"]} "
         end
-        out = "#{dir}/left_unpaired.fq"
-        cat_cmd << " >  #{out}"
-        cat = Cmd.new(cat_cmd)
-        cat.run
-        left[:unpaired] = "#{out}"
       end
-      if yaml[1] and yaml[1]["single reads"]
-        yaml[1]["single reads"].each do |single|
-          cat_cmd << " #{single} "
-        end
-        out = "#{dir}/right_unpaired.fq"
-        cat_cmd << " >  #{out}"
-        cat = Cmd.new(cat_cmd)
-        cat.run
-        right[:unpaired] = "#{out}"
-      end
-
+      out = "#{dir}/single_reads.fq"
+      cat_cmd << " > #{out}"
+      cat = Cmd.new(cat_cmd)
+      cat.run
+      left[:unpaired] = out
+      # right[:unpaired] = out
     end
 
-    def stats file
+    def run_batch left, right # array of file names
+      left_files = []
+      right_files = []
+      single = []
+      left.each do |info|
+        left_files << info[:current]
+        single << info[:unpaired] if info[:unpaired] and info[:unpaired].length > 0
+      end
+      right.each do |info|
+        right_files << info[:current]
+        single << info[:unpaired] if info[:unpaired] and info[:unpaired].length > 0
+      end
+      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+      dir = "hammer"
+      dir = File.join(@outdir, dir)
+      phred = detect_phred left.first[:current]
+      dataset = "[\n  {\n    orientation: \"fr\",\n"
+      dataset << "    type: \"paired-end\",\n"
+      dataset << "    left reads: [\n"
+      dataset << "      #{left_files.join(",\n      ")}\n"
+      dataset << "    ],\n    right reads: [\n"
+      dataset << "      #{right_files.join(",\n      ")}\n"
+      dataset << "    ]\n  }"
+      if single and single.length > 0
+        dataset << ",\n  {\n"
+        dataset << "    type: \"single\",\n"
+        dataset << "    single reads: [\n"
+        dataset << "      #{single.join(",\n      ")}\n"
+        dataset << "    ]\n  }"
+      end
+      dataset << "\n]\n"
+      dataset_file = "#{@outdir}/dataset.yaml"
+      File.open(dataset_file, "wb") { |io| io.write dataset }
+      puts "wrote dataset file to #{dataset_file}"
+      cmd = "#{@spades} "
+      cmd << "--dataset #{dataset_file} "
+      cmd << "--only-error-correction "
+      cmd << "--disable-gzip-output "
+      cmd << "-t #{@threads} "
+      cmd << "-m #{@memory} "
+      cmd << "-o #{dir} "
+      cmd << "--phred-offset #{phred} "
+      puts cmd
+      b = Cmd.new cmd
+      b.run
+      yaml = YAML.load_file("#{dir}/corrected/corrected.yaml")
+      left_output = yaml.first["left reads"]
+      right_output = yaml.first["right reads"]
+      single_output = []
+      yaml.each do |hash|
+        if hash and hash.key?("single reads")
+          hash["single reads"].each do |file|
+            single_output << file
+          end
+        end
+      end
+
+      left.zip(left_output) do |a, b|
+        a[:prehammer] = a[:current]
+        a[:current] = b
+        a[:processed][:correction] = "bayeshammer"
+      end
+      right.zip(right_output) do |a, b|
+        a[:prehammer] = a[:current]
+        a[:current] = b
+        a[:processed][:correction] = "bayeshammer"
+      end
+      left.zip(single_output).each do |a,b|
+        a[:unpaired] = b
+      end
+    end
+
+    def stats info
       # open :prehammer and :current and compare bases
       # hopefully the reads will be the same length
       # create a list of base position where corrections were made
       @errors = Array.new(100,0)
       @error_qualities = []
-      before = File.open(file[:prehammer])
-      after = File.open(file[:current])
+      before = File.open(info[:prehammer])
+      after = File.open(info[:current])
       name1 = before.readline
       name2 = after.readline
       while name1 and name2
