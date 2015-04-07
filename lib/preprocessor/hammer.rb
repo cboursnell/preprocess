@@ -53,9 +53,8 @@ module Preprocessor
       cmd << "-m #{@memory} "
       cmd << "-o #{dir} "
       cmd << "--phred-offset #{detect_phred(left[:current])} "
-      puts cmd
       hammer_cmd = Cmd.new(cmd)
-      unless Dir.exist? dir
+      unless File.exist?(File.join(dir, "corrected", "corrected.yaml"))
         hammer_cmd.run
         if !hammer_cmd.status.success?
           msg = "BayesHammer failed\n#{hammer_cmd.stdout}\n#{hammer_cmd.stderr}"

@@ -84,11 +84,13 @@ module Preprocessor
         cmd << "target=#{@coverage} "
         cmd << "threads=#{@threads}"
         norm = Cmd.new(cmd)
-        norm.run
-        if !norm.status.success?
-          msg = "something went wrong with bbnorm\n"
-          msg << "#{norm.stdout}\n#{norm.stderr}"
-          raise RuntimeError.new(msg)
+        unless File.exist?(leftout)
+          norm.run
+          if !norm.status.success?
+            msg = "something went wrong with bbnorm\n"
+            msg << "#{norm.stdout}\n#{norm.stderr}"
+            raise RuntimeError.new(msg)
+          end
         end
         left[:current] = leftout
         right[:current] = rightout
