@@ -33,11 +33,20 @@ module Preprocessor
     def run left, right=nil
       cmd =""
       if right # paired
-        outfile_left = "#{@outdir}/#{left[:name]}_#{left[:type]}_#{left[:rep]}-#{left[:pair]}.t.fq"
-        outfileU_left = "#{@outdir}/#{left[:name]}_#{left[:type]}_#{left[:rep]}-#{left[:pair]}.tU.fq"
-
-        outfile_right = "#{@outdir}/#{right[:name]}_#{right[:type]}_#{right[:rep]}-#{right[:pair]}.t.fq"
-        outfileU_right = "#{@outdir}/#{right[:name]}_#{right[:type]}_#{right[:rep]}-#{right[:pair]}.tU.fq"
+        outfile_left = "#{@outdir}/#{left[:name]}_"
+        outfileU_left = "#{@outdir}/#{left[:name]}_"
+        outfile_right = "#{@outdir}/#{right[:name]}_"
+        outfileU_right = "#{@outdir}/#{right[:name]}_"
+        if left[:name] != left[:type]
+          outfile_left << "#{left[:type]}_"
+          outfileU_left << "#{left[:type]}_"
+          outfile_right << "#{right[:type]}_"
+          outfileU_right << "#{right[:type]}_"
+        end
+        outfile_left << "#{left[:rep]}-#{left[:pair]}.t.fq"
+        outfileU_left << "#{left[:rep]}-#{left[:pair]}.tU.fq"
+        outfile_right << "#{right[:rep]}-#{right[:pair]}.t.fq"
+        outfileU_right << "#{right[:rep]}-#{right[:pair]}.tU.fq"
 
         cmd << "#{@java} -jar #{@path} PE "
         cmd << " -phred#{self.detect_phred left[:current]}"

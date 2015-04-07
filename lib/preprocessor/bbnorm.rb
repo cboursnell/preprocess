@@ -65,10 +65,12 @@ module Preprocessor
         cmd = "#{@bbnorm} "
         cmd << "in=#{left[:current]} "
         cmd << "in2=#{right[:current]} "
-        leftout = "#{left[:name]}-#{left[:type]}-#{left[:rep]}"
-        leftout << "_#{left[:pair]}.bbnorm.fq"
-        rightout = "#{right[:name]}-#{right[:type]}-#{right[:rep]}"
-        rightout << "_#{right[:pair]}.bbnorm.fq"
+        leftout = "#{left[:name]}-"
+        leftout << "#{left[:type]}-" if left[:name]!=left[:type]
+        leftout << "#{left[:rep]}_#{left[:pair]}.bbnorm.fq"
+        rightout = "#{right[:name]}-"
+        rightout << "#{right[:type]}-" if right[:name]!=right[:type]
+        rightout << "#{right[:rep]}_#{right[:pair]}.bbnorm.fq"
         leftout = File.join(@outdir, leftout)
         rightout = File.join(@outdir, rightout)
         cmd << "out=#{leftout} "
