@@ -53,5 +53,14 @@ class TestNormalise < Test::Unit::TestCase
       pp @pre.data
     end
 
+    should 'trim and then bbnorm' do
+      @pre.trimmomatic
+      @pre.bbnorm
+      assert File.exist?("#{@output}/test-A-1_1.bbnorm.fq"), "file exist 1-1"
+      assert File.exist?("#{@output}/test-A-1_2.bbnorm.fq"), "file exist 1-2"
+      assert File.exist?("#{@output}/test-A-2_1.bbnorm.fq"), "file exist 2-1"
+      assert File.exist?("#{@output}/test-A-2_2.bbnorm.fq"), "file exist 2-2"
+    end
+
   end
 end
