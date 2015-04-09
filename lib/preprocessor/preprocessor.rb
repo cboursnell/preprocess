@@ -315,8 +315,6 @@ module Preprocessor
       unless cat2.status.success?
         puts "Cat2 failed"
       end
-      puts cmd1
-      puts cmd2
       unless File.exist?(left_output)
         abort "Couldn't find catted file"
       end

@@ -93,6 +93,8 @@ module Preprocessor
             raise RuntimeError.new(msg)
           end
         end
+        left[:prenorm] = left[:current]
+        right[:prenorm] = right[:current]
         left[:current] = leftout
         right[:current] = rightout
       end
