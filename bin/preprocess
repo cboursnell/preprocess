@@ -175,6 +175,8 @@ else
   if opts.correction == "none"
   elsif opts.correction == "hammer"
     preprocessor.hammer
+  elsif opts.correction == "hammer_batch"
+    preprocessor.hammer_batch
   else
     raise RuntimeError.new("#{opts.correction} is not a valid input to correction")
   end

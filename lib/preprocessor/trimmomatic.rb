@@ -85,7 +85,7 @@ module Preprocessor
           raise RuntimeError.new(msg)
         end
       else
-        puts "#{outfile_left} already exists"
+        puts "#{File.basename(outfile_left)} already exists"
       end
     end
 

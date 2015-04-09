@@ -287,6 +287,58 @@ module Preprocessor
       end
     end
 
+    def bbnorm_batch(k=31, target_coverage=20, bits=16, tables=3,
+               lowthresh=1, mindepth=1, minkmers=15)
+      cmd1 = "cat "
+      cmd2 = "cat "
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        unless File.exist?(left[:current])
+          abort "Can't find #{left[:current]}"
+        end
+        unless File.exist?(right[:current])
+          abort "Can't find #{right[:current]}"
+        end
+        cmd1 << "#{left[:current]} "
+        cmd2 << "#{right[:current]} "
+      end
+      left_output = "#{@output_dir}/#{@data[0][:name]}_1.fq"
+      right_output = "#{@output_dir}/#{@data[1][:name]}_2.fq"
+      cmd1 << " > #{left_output}"
+      cmd2 << " > #{right_output}"
+      cat1 = Cmd.new cmd1
+      cat2 = Cmd.new cmd2
+      cat1.run
+      cat2.run
+      unless cat1.status.success?
+        puts "Cat1 failed"
+      end
+      unless cat2.status.success?
+        puts "Cat2 failed"
+      end
+      puts cmd1
+      puts cmd2
+      unless File.exist?(left_output)
+        abort "Couldn't find catted file"
+      end
+      if File.stat(left_output).size < 10
+        abort "Catted file too small"
+      end
+      @data[0][:current] = left_output
+      @data[1][:current] = right_output
+      normaliser = BBnorm.new(@output_dir, @threads, @memory,
+              k, target_coverage, bits, tables, lowthresh, mindepth, minkmers)
+      normaliser.run(@data[0], @data[1])
+      # File.delete(left_output)
+      # File.delete(right_output)
+      @data = [@data[0], @data[1]]
+      @data[0][:processed][:normalise] = "bbnorm"
+      @data[1][:processed][:normalise] = "bbnorm"
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
+    end
+
+
     def bowtie2(reference, expression=false)
       aligner = Bowtie2.new(@output_dir, @threads, reference, expression)
       if @paired==1

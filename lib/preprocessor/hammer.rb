@@ -77,8 +77,10 @@ module Preprocessor
       end
       out = "#{dir}/single_reads.fq"
       cat_cmd << " > #{out}"
-      cat = Cmd.new(cat_cmd)
-      cat.run
+      unless File.exist?(out)
+        cat = Cmd.new(cat_cmd)
+        cat.run
+      end
       left[:unpaired] = out
       # right[:unpaired] = out
     end

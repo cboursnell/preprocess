@@ -47,13 +47,10 @@ class TestNormalise < Test::Unit::TestCase
       assert File.exist?("#{@output}/test-A-2_2.bbnorm.fq"), "file exist 2-2"
     end
 
-    should 'trim and then bbnorm' do
-      @pre.trimmomatic
-      @pre.bbnorm
-      assert File.exist?("#{@output}/test-A-1_1.bbnorm.fq"), "file exist 1-1"
-      assert File.exist?("#{@output}/test-A-1_2.bbnorm.fq"), "file exist 1-2"
-      assert File.exist?("#{@output}/test-A-2_1.bbnorm.fq"), "file exist 2-1"
-      assert File.exist?("#{@output}/test-A-2_2.bbnorm.fq"), "file exist 2-2"
+    should "run bbnorm as a batch" do
+      puts @output
+      @pre.bbnorm_batch(21, 5, 16, 3, 1, 1, 15)
+      pp @pre.data
     end
 
   end
