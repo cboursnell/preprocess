@@ -2,9 +2,9 @@ salmon:
   binaries:
     - salmon
   version:
-    number: 'Salmon v0.2.7'
+    number: 'Salmon v0.3.0'
     command: 'salmon --help'
   url:
     64bit:
-      linux: https://github.com/kingsfordgroup/sailfish/releases/download/v0.2.3/SalmonBeta-v0.2.3_ubuntu-14.04.tar.gz
+      linux: https://github.com/kingsfordgroup/sailfish/releases/download/v0.3.0/SalmonBeta-v0.3.0_squeeze.tar.gz
       macosx: https://github.com/kingsfordgroup/sailfish/releases/download/v0.2.3/SalmonBeta-v0.2.3_ubuntu-14.04.tar.gz
