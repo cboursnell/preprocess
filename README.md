@@ -43,6 +43,10 @@ for example:
 ```bash
 preprocess --input data --output ~/rice/output --threads 8 --memory 20 --verbose
 ```
+or
+```bash
+preprocess --left reads_1.fq --right reads_2.fq --output ~/rice/output --threads 8 --memory 20 --verbose --trimmer none --correction hammer
+```
 
 # Dependencies
 
@@ -69,7 +73,10 @@ Just run this to install the latest version of the RVM and Ruby
 Then to install Preprocessor
 
 ```
-gem install preprocessor
+git clone git@github.com:cboursnell/preprocess.git
+cd preprocess
+gem build *spec
+gem install *gem
 ```
 
 
@@ -86,7 +93,7 @@ Then
 ```bash
 pip install khmer
 ```
-This might have to be run using `sudo`
+This might have to be run using `sudo`. This might not work at all... python package management is ... fraught. (https://twitter.com/gardaud/status/357638468572151808)
 
 # Installation of SPAdes
 
@@ -95,8 +102,8 @@ BayesHammer is automatically installed when the program is run.
 If you choose to use BayesHammer for read error correction it is included in the SPAdes assembler. The compiled binaries can be downloaded:
 
 ```bash
-wget http://spades.bioinf.spbau.ru/release3.1.0/SPAdes-3.1.0-Linux.tar.gz
-tar -xzf SPAdes-3.1.0-Linux.tar.gz
+wget http://spades.bioinf.spbau.ru/release3.5.0/SPAdes-3.5.0-Linux.tar.gz
+tar -xzf SPAdes-3.5.0-Linux.tar.gz
 ```
 
 # Installation of BBMap
