@@ -110,10 +110,6 @@ tar -xzf SPAdes-3.5.0-Linux.tar.gz
 
 bbmap is automatically installed when the program is run.
 
-# Installation of facs
-
-facs is automatically installed when the program is run.
-
 # Installation of skewer
 
 skewer is automatically installed when the program is run.
