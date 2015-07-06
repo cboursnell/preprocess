@@ -128,6 +128,8 @@ if opts.expression=="none"
 else
   if opts.aligner=="none"
     Trollop::die :aligner, "must be set if you want to calculate expression"
+  elsif opts.aligner=="bwa"
+    Trollop::die "bwa doesn't report multimapping reads correctly"
   end
   expression = true
 end

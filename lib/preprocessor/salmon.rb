@@ -23,11 +23,12 @@ module Preprocessor
 
       cmd = "#{@salmon} quant"
       cmd << " --libType IU"
-      cmd << " --alignments #{@outdir}/#{sam}"
+      cmd << " --alignments #{sam}"
       cmd << " --targets #{@reference}"
       cmd << " --threads #{@threads}"
-      cmd << " --sampleOut"
+      cmd << " --useErrorModel"
       cmd << " --output #{salmon_out}"
+
       salmon = Cmd.new(cmd)
       salmon.run
       if !salmon.status.success?
