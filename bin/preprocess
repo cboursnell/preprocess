@@ -55,7 +55,7 @@ opts = Trollop::options do
   opt :normalise, "Which digital normalisation program to run (none|khmer|bbnorm)",
       :default => "none",
       :type => String
-  opt :aligner, "Which aligner to use (none|bowtie2|bbmap|snap)",
+  opt :aligner, "Which aligner to use (none|bowtie2|bwa|bbmap|snap)",
       :default => "none",
       :type => String
   opt :reference, "Fasta file of reference sequence. Used by the aligner. Ignored otherwise",
@@ -201,6 +201,8 @@ else
   if opts.aligner == "none"
   elsif opts.aligner == "bowtie2"
     preprocessor.bowtie2(opts.reference, expression)
+  elsif opts.aligner == "bwa"
+    preprocessor.bwa(opts.reference, expression)
   elsif opts.aligner == "snap"
     preprocessor.snap(opts.reference)
   elsif opts.aligner == "bbmap"
@@ -225,8 +227,12 @@ end
 
 set = Set.new
 preprocessor.data.each do |hash|
-  set << hash[:current]
-  set << hash[:unpaired] if hash[:unpaired].length > 0 if hash[:unpaired]
+  if opts.aligner != "none"
+    set << hash[:sam]
+  else
+    set << hash[:current]
+    set << hash[:unpaired] if hash[:unpaired].length > 0 if hash[:unpaired]
+  end
 end
 puts "Final output files:"
 set.each do |file|

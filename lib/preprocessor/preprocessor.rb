@@ -361,6 +361,27 @@ module Preprocessor
       end
     end
 
+    def bwa(reference, expression=false)
+      aligner = Bwa.new(@output_dir, @threads, reference, expression)
+      if @paired==1
+        @data.each_with_index do |left, i|
+          puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
+          aligner.run(left)
+          left[:processed][:align] = "bowtie2"
+        end
+      elsif @paired==2
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          puts "Aligning #{left[:type]}-#{left[:rep]}..." if @verbose
+          aligner.run(left, right)
+          left[:processed][:align] = "bowtie2"
+          right[:processed][:align] = "bowtie2"
+        end
+      end
+      File.open("#{@output_dir}/log", "wb") do |f|
+        f.write(JSON.pretty_generate(@data))
+      end
+    end
+
     def snap(reference, expression=false)
       aligner = Snap.new(@output_dir, @threads, reference, expression)
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|

@@ -32,25 +32,22 @@ class TestAlign < Test::Unit::TestCase
       assert File.exist?("#{@output}/bowtie2.stats")
     end
 
-    should 'run bowtie2 with single reads' do
-      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
-      pre = Preprocessor::Preprocessor.new(@output, false, 1, 1)
-      left = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq')
-      left << ","
-      left << File.join(File.dirname(__FILE__), 'data', 'A-2-1.fq')
-      pre.load_single_reads(left, "test")
-      pre.bowtie2(reference, false)
-      assert File.exist?("#{@output}/A-1-1-reference.fa.sam")
-      assert File.exist?("#{@output}/A-2-1-reference.fa.sam")
-      assert File.exist?("#{@output}/bowtie2.stats")
+    should 'run bwa index' do
+      ref = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      bwa = Preprocessor::Bwa.new(@output, 1, ref, false)
+      index = bwa.build_index
+      assert File.exist?("#{index}.bwt"), "index exists"
     end
 
-    should 'run snap' do
-      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
-      @pre.snap(reference, false)
-      assert File.exist?("#{@output}/A-1-1.fq.A-1-2.fq.reference.bam")
-      assert File.exist?("#{@output}/A-2-1.fq.A-2-2.fq.reference.bam")
-      assert File.exist?("#{@output}/snap.stats")
+    should 'run bwa mem' do
+      ref = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      left = {}
+      right = {}
+      left[:current] = File.join(File.dirname(__FILE__), 'data', 'A-1-1.fq')
+      right[:current] = File.join(File.dirname(__FILE__), 'data', 'A-1-2.fq')
+      bwa = Preprocessor::Bwa.new(@output, 1, ref, false)
+      bwa.run left, right
+      assert File.exist?(left[:sam])
     end
 
     # TODO:
