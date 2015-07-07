@@ -57,14 +57,15 @@ module Preprocessor
       @phred = detect_phred(left[:current])
       cmd << "--phred-offset #{@phred} "
       hammer_cmd = Cmd.new(cmd)
-      unless File.exist?(File.join(dir, "corrected", "corrected.yaml"))
+      yaml_file = File.join(dir, "corrected", "corrected.yaml")
+      unless File.exist?(yaml_file)
         hammer_cmd.run
         if !hammer_cmd.status.success?
           msg = "BayesHammer failed\n#{hammer_cmd.stdout}\n#{hammer_cmd.stderr}"
           raise RuntimeError.new(msg)
         end
       end
-      yaml = YAML.load_file("#{dir}/corrected/corrected.yaml")
+      yaml = YAML.load_file(yaml_file)
       cat_cmd = "cat "
       left[:prehammer] = left[:current]
       right[:prehammer] = right[:current]
@@ -130,8 +131,9 @@ module Preprocessor
       cmd << "--phred-offset #{phred} "
       puts cmd
       b = Cmd.new cmd
-      b.run
-      yaml = YAML.load_file("#{dir}/corrected/corrected.yaml")
+      yaml_file = "#{dir}/corrected/corrected.yaml"
+      b.run yaml_file
+      yaml = YAML.load_file(yaml_file)
       left_output = yaml.first["left reads"]
       right_output = yaml.first["right reads"]
       single_output = []
@@ -142,6 +144,7 @@ module Preprocessor
           end
         end
       end
+
 
       left.zip(left_output) do |a, b|
         a[:prehammer] = a[:current]

@@ -310,14 +310,14 @@ module Preprocessor
       cat2 = Cmd.new cmd2
       unless File.exist?(left_output)
         puts "concatenating left files..." if @verbose
-        cat1.run
+        cat1.run left_output
         unless cat1.status.success?
           puts "Cat1 failed"
         end
       end
       unless File.exist?(right_output)
         puts "concatenating right files..." if @verbose
-        cat2.run
+        cat2.run right_output
         unless cat2.status.success?
           puts "Cat2 failed"
         end

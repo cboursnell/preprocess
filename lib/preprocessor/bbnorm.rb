@@ -84,7 +84,6 @@ module Preprocessor
         cmd << "target=#{@coverage} "
         cmd << "threads=#{@threads}"
         norm = Cmd.new(cmd)
-        puts cmd
         unless File.exist?(leftout)
           norm.run
           if !norm.status.success?
