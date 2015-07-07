@@ -308,14 +308,21 @@ module Preprocessor
       cmd2 << " > #{right_output}"
       cat1 = Cmd.new cmd1
       cat2 = Cmd.new cmd2
-      cat1.run
-      cat2.run
-      unless cat1.status.success?
-        puts "Cat1 failed"
+      unless File.exist?(left_output)
+        puts "concatenating left files..." if @verbose
+        cat1.run
+        unless cat1.status.success?
+          puts "Cat1 failed"
+        end
       end
-      unless cat2.status.success?
-        puts "Cat2 failed"
+      unless File.exist?(right_output)
+        puts "concatenating right files..." if @verbose
+        cat2.run
+        unless cat2.status.success?
+          puts "Cat2 failed"
+        end
       end
+
       unless File.exist?(left_output)
         abort "Couldn't find catted file"
       end

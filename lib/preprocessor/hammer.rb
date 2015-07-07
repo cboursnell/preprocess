@@ -54,7 +54,8 @@ module Preprocessor
       cmd << "-t #{@threads} "
       cmd << "-m #{@memory} "
       cmd << "-o #{dir} "
-      cmd << "--phred-offset #{detect_phred(left[:current])} "
+      @phred = detect_phred(left[:current])
+      cmd << "--phred-offset #{@phred} "
       hammer_cmd = Cmd.new(cmd)
       unless File.exist?(File.join(dir, "corrected", "corrected.yaml"))
         hammer_cmd.run
@@ -203,9 +204,15 @@ module Preprocessor
 
     def get_stats
       qe = "#{@outdir}/quality_and_errors.txt"
+      if @phred==33
+        max = 74
+      elsif @phred==64
+        max = 105
+      end
+      min = max - 41
       unless File.exist?(qe)
         File.open(qe, "wb") do |out|
-          out.write "base\t#{(32..105).reduce([]) {|list, i| list << i}.join("\t")}\n"
+          out.write "base\t#{(min..max).reduce([]) {|list, i| list << i}.join("\t")}\n"
           @error_qualities.each_with_index do |list, index|
             unless list.nil?
               row = []
