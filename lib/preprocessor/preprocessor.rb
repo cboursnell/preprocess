@@ -10,6 +10,7 @@
 ##   khmer
 ##   bbnorm
 ##   bowtie2
+##   bwa
 ##   snap
 ##   express
 ##   salmon
@@ -400,23 +401,35 @@ module Preprocessor
 
     def salmon(reference)
       salmon = Salmon.new(@output_dir, @threads, reference)
-      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        puts "Quantifying #{left[:current]}" if @verbose
-        salmon.run(left, right)
-        left[:processed][:expression] = "salmon"
-        right[:processed][:expression] = "salmon"
-        File.open("#{@output_dir}/log", "wb") do |f|
-          f.write(JSON.pretty_generate(@data))
+
+      if @paired == 1
+        @data.each_with_index do |left, i|
+          puts "Quantifying #{left[:current]}" if @verbose
+          salmon.run(left)
+          left[:processed][:expression] = "salmon"
+          File.open("#{@output_dir}/log", "wb") do |f|
+            f.write(JSON.pretty_generate(@data))
+          end
         end
-      end
-      results = "#{@output_dir}/salmon_results"
-      File.open(results, "wb") do |out|
+      else
         @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-          name = left[:name]
-          type = left[:type]
-          rep = left[:rep]
-          file = left[:salmon]
-          out.write("#{name},#{type},#{rep},#{file}\n")
+          puts "Quantifying #{left[:current]}" if @verbose
+          salmon.run(left, right)
+          left[:processed][:expression] = "salmon"
+          right[:processed][:expression] = "salmon"
+          File.open("#{@output_dir}/log", "wb") do |f|
+            f.write(JSON.pretty_generate(@data))
+          end
+        end
+        results = "#{@output_dir}/salmon_results"
+        File.open(results, "wb") do |out|
+          @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+            name = left[:name]
+            type = left[:type]
+            rep = left[:rep]
+            file = left[:salmon]
+            out.write("#{name},#{type},#{rep},#{file}\n")
+          end
         end
       end
     end

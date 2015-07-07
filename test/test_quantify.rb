@@ -29,11 +29,18 @@ class TestQuantify < Test::Unit::TestCase
     # end
 
     should 'run salmon' do
-      puts "output tmp dir: #{@output}"
       reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
       @pre.bowtie2(reference, true)
       @pre.salmon(reference)
-      assert File.exist?("#{@output}/quant.sf")
+      assert File.exist?(@pre.data[0][:salmon]), "quant.sf file not found"
+      assert File.exist?(@pre.data[2][:salmon]), "quant.sf file not found"
+    end
+
+    should 'run salmon in alignment mode' do
+      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      @pre.salmon(reference)
+      assert File.exist?(@pre.data[0][:salmon]), "quant.sf file not found"
+      assert File.exist?(@pre.data[2][:salmon]), "quant.sf file not found"
     end
 
   end

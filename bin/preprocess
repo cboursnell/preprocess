@@ -39,7 +39,8 @@ opts = Trollop::options do
   opt :input, "Input file describing fastq files. Ignored if left and right specified",
       :type => String
   opt :output, "Directory where output files go",
-      :type => String
+      :type => String,
+      :required => true
   opt :threads, "Number of threads to use",
       :default => 1,
       :type => :int
@@ -97,17 +98,20 @@ if opts.morehelp
   exit(1)
 end
 
-if opts.left and opts.right and !opts.continue
+if opts.left and !opts.continue
   opts.left.split(",").each do |file|
     Trollop::die "#{file} must exist" if !File.exist?(file)
   end
+else
+  Trollop::die "Must specify input" if !opts.input
+  Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
+end
+if opts.right and !opts.continue
   opts.right.split(",").each do |file|
     Trollop::die "#{file} must exist" if !File.exist?(file)
   end
 elsif opts.continue
-else
-  Trollop::die "Must specify input" if !opts.input
-  Trollop::die :input, "must exist" if !File.exist?(opts.input) if opts.input
+  ## TODO need to add something to handle single files herer
 end
 
 if opts.continue and !Dir.exist?(opts.output)
@@ -125,6 +129,13 @@ end
 
 if opts.expression=="none"
   expression = false
+elsif opts.expression=="salmon"
+  if opts.reference
+    Trollop::die "#{opts.reference} not found" if !File.exist?(opts.reference)
+  else
+    Trollop::die :reference, "must be specified when using salmon"
+  end
+  expression = true
 else
   if opts.aligner=="none"
     Trollop::die :aligner, "must be set if you want to calculate expression"
@@ -149,6 +160,8 @@ if opts.continue
   )
 elsif opts.left and opts.right
   preprocessor.load_reads(opts.left, opts.right, opts.name)
+elsif opts.left
+  preprocessor.load_single_reads(opts.left, opts.name)
 else
   preprocessor.load_input(opts.input)
 end
