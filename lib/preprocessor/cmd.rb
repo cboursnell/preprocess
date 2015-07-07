@@ -2,6 +2,12 @@ require 'open3'
 
 module Preprocessor
 
+  class Status
+    def success?
+      return true
+    end
+  end
+
   class Cmd
 
     attr_accessor :cmd, :stdout, :stderr, :status
@@ -12,8 +18,12 @@ module Preprocessor
 
     def run file=nil
       unless file.nil?
-        @stdout, @stderr, @status = Open3.capture3 "echo #{file} exists"
-        return true if File.exist?(file)
+        if File.exist?(file) and File.stat(file).size > 0
+          @stdout = ""
+          @stderr = ""
+          @status = Status.new
+          return true
+        end
       end
       @stdout, @stderr, @status = Open3.capture3 @cmd
       return false
