@@ -2,6 +2,12 @@ require 'open3'
 
 module Preprocessor
 
+  class Status
+    def success?
+      return true
+    end
+  end
+
   class Cmd
 
     attr_accessor :cmd, :stdout, :stderr, :status
@@ -10,8 +16,21 @@ module Preprocessor
       @cmd = cmd
     end
 
-    def run
+    def run file=nil
+      unless file.nil?
+        if File.exist?(file)
+          @stdout = ""
+          @stderr = ""
+          @status = Status.new
+          return true
+        end
+      end
       @stdout, @stderr, @status = Open3.capture3 @cmd
+      return false
+    end
+
+    def to_s
+      @cmd
     end
 
   end

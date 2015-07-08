@@ -23,10 +23,10 @@ class TestQuantify < Test::Unit::TestCase
       `#{cmd}`
     end
 
-    # should 'run express' do
-    #   reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
-    #   @pre.bowtie2(reference, true)
-    # end
+    should 'run express' do
+      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      @pre.bowtie2(reference, true)
+    end
 
     should 'run salmon' do
       reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')

@@ -39,8 +39,7 @@ opts = Trollop::options do
   opt :input, "Input file describing fastq files. Ignored if left and right specified",
       :type => String
   opt :output, "Directory where output files go",
-      :type => String,
-      :required => true
+      :type => String
   opt :threads, "Number of threads to use",
       :default => 1,
       :type => :int
@@ -84,7 +83,7 @@ end
 
 if opts.morehelp
   puts "The input file should contain a line describing each input fastq file"
-  puts "Each line should contain four fields separated by commas"
+  puts "Each line should contain five fields separated by commas"
   puts "   1) Name of experiment"
   puts "   2) Path to the fastq file"
   puts "   3) What rep this file belongs to (integer)"
@@ -96,6 +95,10 @@ if opts.morehelp
   puts "rice,fastq/M-1-R1.fastq,1,M,1"
   puts "rice,fastq/M-1-R2.fastq,1,M,2"
   exit(1)
+end
+
+if !opts.output
+  Trollop::die "Error: option --output must be specified."
 end
 
 if opts.left and !opts.continue
@@ -117,7 +120,7 @@ end
 if opts.continue and !Dir.exist?(opts.output)
   Trollop::die :output, "must exist"
 elsif !opts.continue and Dir.exist?(opts.output)
-  Trollop::die :output, "mustn't exist"
+  # Trollop::die :output, "mustn't exist"
 end
 if opts.aligner!="none"
   if opts.reference

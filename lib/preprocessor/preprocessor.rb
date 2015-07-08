@@ -418,7 +418,17 @@ module Preprocessor
             f.write(JSON.pretty_generate(@data))
           end
         end
-      else
+        results = "#{@output_dir}/salmon_results"
+        File.open(results, "wb") do |out|
+          @data.each_with_index do |left,i|
+            name = left[:name]
+            type = left[:type]
+            rep = left[:rep]
+            file = left[:salmon]
+            out.write("#{name},#{type},#{rep},#{file}\n")
+          end
+        end
+      else # paired == 2
         @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
           puts "Quantifying #{left[:current]}" if @verbose
           salmon.run(left, right)
