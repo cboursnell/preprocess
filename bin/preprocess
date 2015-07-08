@@ -235,6 +235,7 @@ else
     preprocessor.express(opts.reference)
   elsif opts.expression == "salmon"
     preprocessor.salmon(opts.reference)
+    preprocessor.combine_salmon
   else
     raise RuntimeError.new("#{opts.expression} is not a valid input to expression")
   end

@@ -43,5 +43,13 @@ class TestQuantify < Test::Unit::TestCase
       assert File.exist?(@pre.data[2][:salmon]), "quant.sf file not found"
     end
 
+    should 'run salmon and combine outputs' do
+      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      @pre.salmon(reference)
+      @pre.combine_salmon
+      assert File.exist?(File.join(@output, "combined_tpm.csv"))
+      assert File.exist?(File.join(@output, "combined_counts.csv"))
+    end
+
   end
 end
