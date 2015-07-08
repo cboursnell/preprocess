@@ -24,12 +24,13 @@ module Preprocessor
     def build_index
       # construct index if it doesn't exist
       index = File.join(@outdir, File.basename(@reference))
-      if !File.exist?("#{index}.1.bt2")
+      index_file = "#{index}.1.bt2"
+      if !File.exist?(index_file)
         cmd = "#{@build}"
         cmd << " #{@reference}"
         cmd << " #{index}"
         build = Cmd.new(cmd)
-        build.run
+        build.run index_file
         if !build.status.success?
           msg = "Something went wrong with bowtie2-build\n"
           msg << "#{build.stdout}"
@@ -65,7 +66,7 @@ module Preprocessor
       end
       cmd << " -S #{sam}"
       align = Cmd.new(cmd)
-      align.run
+      align.run sam
       hash = {}
       if align.status.success?
         left[:sam] = sam

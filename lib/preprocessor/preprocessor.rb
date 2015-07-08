@@ -418,7 +418,17 @@ module Preprocessor
             f.write(JSON.pretty_generate(@data))
           end
         end
-      else
+        results = "#{@output_dir}/salmon_results"
+        File.open(results, "wb") do |out|
+          @data.each_with_index do |left,i|
+            name = left[:name]
+            type = left[:type]
+            rep = left[:rep]
+            file = left[:salmon]
+            out.write("#{name},#{type},#{rep},#{file}\n")
+          end
+        end
+      else # paired == 2
         @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
           puts "Quantifying #{left[:current]}" if @verbose
           salmon.run(left, right)
@@ -440,6 +450,62 @@ module Preprocessor
         end
       end
     end
+
+    # :name=>"test", :rep=>1, :type=>"A", :pair=>1,
+    def combine_salmon
+      @tpm = {}
+      @counts = {}
+      if @paired == 1
+        @data.each_with_index do |left, i|
+          p left
+        end
+      elsif @paired == 2
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          name = "#{left[:name]}-#{left[:type]}-#{left[:rep]}"
+          File.open(left[:salmon]).each do |line|
+            unless line.start_with?("#")
+              # p line.chomp.split("\t")
+              cols = line.chomp.split("\t")
+              transcript = cols[0]
+              tpm = cols[2].to_f
+              counts = cols[3].to_f
+              @tpm[transcript] ||= {}
+              @tpm[transcript][name] = tpm
+              @counts[transcript] ||= {}
+              @counts[transcript][name] = counts
+            end
+          end
+        end
+        File.open("#{@output_dir}/combined_tpm.csv", "wb") do |out|
+          out.write "transcript"
+          @tpm[@tpm.keys.first].each do |file, tpm|
+            out.write "\t#{file}"
+          end
+          out.write "\n"
+          @tpm.each do |transcript, hash|
+            out.write "#{transcript}"
+            hash.each do |file, tpm|
+              out.write "\t#{tpm}"
+            end
+            out.write "\n"
+          end
+        end
+        File.open("#{@output_dir}/combined_counts.csv", "wb") do |out|
+          out.write "transcript"
+          @counts[@counts.keys.first].each do |file, counts|
+            out.write "\t#{file}"
+          end
+          out.write "\n"
+          @counts.each do |transcript, hash|
+            out.write "#{transcript}"
+            hash.each do |file, counts|
+              out.write "\t#{counts}"
+            end
+            out.write "\n"
+          end
+        end
+      end
+    end # combine_salmon
 
     def express(reference)
       expression = Express.new(@output_dir, @threads, reference)

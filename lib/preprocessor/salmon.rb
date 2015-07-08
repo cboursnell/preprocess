@@ -31,13 +31,14 @@ module Preprocessor
         cmd << " --output #{salmon_out}"
 
         salmon = Cmd.new(cmd)
-        salmon.run
+        out = File.join(salmon_out, "quant.sf")
+        salmon.run out
         if !salmon.status.success?
           msg = "Something went wrong with salmon\n#{salmon.stdout}\n"
           msg << "#{salmon.stderr}"
           raise RuntimeError.new(msg)
         end
-        left[:salmon] = File.join(salmon_out, "quant.sf")
+        left[:salmon] = out
       elsif left[:current] =~ /fastq/ or left[:current] =~ /fq/
         salmon_out = File.join(@outdir, "salmon_#{File.basename(left[:file])}")
         index = "#{File.basename(@reference, File.extname(@reference))}_index"
@@ -63,13 +64,14 @@ module Preprocessor
         cmd << " --index #{index}"
         cmd << " --output #{salmon_out}"
         salmon = Cmd.new(cmd)
-        salmon.run
+        out = File.join(salmon_out, "quant.sf")
+        salmon.run out
         if !salmon.status.success?
           msg = "Something went wrong with salmon\n#{salmon.stdout}\n"
           msg << "#{salmon.stderr}"
           raise RuntimeError.new(msg)
         end
-        left[:salmon] = File.join(salmon_out, "quant.sf")
+        left[:salmon] = out
 
       end
 

@@ -23,10 +23,10 @@ class TestQuantify < Test::Unit::TestCase
       `#{cmd}`
     end
 
-    # should 'run express' do
-    #   reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
-    #   @pre.bowtie2(reference, true)
-    # end
+    should 'run express' do
+      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      @pre.bowtie2(reference, true)
+    end
 
     should 'run salmon' do
       reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
@@ -41,6 +41,14 @@ class TestQuantify < Test::Unit::TestCase
       @pre.salmon(reference)
       assert File.exist?(@pre.data[0][:salmon]), "quant.sf file not found"
       assert File.exist?(@pre.data[2][:salmon]), "quant.sf file not found"
+    end
+
+    should 'run salmon and combine outputs' do
+      reference = File.join(File.dirname(__FILE__), 'data', 'reference.fa')
+      @pre.salmon(reference)
+      @pre.combine_salmon
+      assert File.exist?(File.join(@output, "combined_tpm.csv"))
+      assert File.exist?(File.join(@output, "combined_counts.csv"))
     end
 
   end
