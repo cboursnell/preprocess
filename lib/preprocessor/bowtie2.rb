@@ -73,19 +73,19 @@ module Preprocessor
         right[:sam] = nil if right
         out = align.stderr.split("\n")
         out.each do |row|
-          if row =~ /([0-9]+)\sreads;\ of\ these:/
+          if row =~ /([0-9]+)\sreads;\sof\sthese:/
             @stats[:reads]+=$1.to_i
           end
-          if row =~ /([0-9]+) \([0-9]+\.[0-9]+\%\) were\ paired;\ of\ these:/
+          if row =~ /([0-9]+) \([0-9\.]+\%\) were\ paired;\ of\ these:/
             @stats[:paired_reads]+=$1.to_i
           end
-          if row =~ /([0-9]+) \([0-9]+\.[0-9]+\%\)\ aligned\ concordantly\ 0\ times/
+          if row =~ /([0-9]+) \([0-9\.]+\%\)\ aligned\ .*0\ times/
             @stats[:unaligned]+=$1.to_i
           end
-          if row =~ /([0-9]+) \([0-9]+\.[0-9]+\%\)\ aligned\ concordantly\ exactly\ 1\ time/
+          if row =~ /([0-9]+) \([0-9\.]+\%\)\ aligned\ .*exactly\ 1\ time/
             @stats[:unique]+=$1.to_i
           end
-          if row =~ /([0-9]+) \([0-9]+\.[0-9]+\%\)\ aligned\ concordantly\ >1\ times/
+          if row =~ /([0-9]+) \([0-9\.]+\%\)\ aligned\ .*>1\ times/
             @stats[:multi]+=$1.to_i
           end
         end
