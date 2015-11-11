@@ -7,8 +7,11 @@
 ##   trimmomatic
 ##   skewer
 ##   bayeshammer
+##   rcorrector
 ##   khmer
 ##   bbnorm
+##   bowtie2
+##   salmon
 ##   more to come!
 ##
 ## created: 2014-05-27 Chris Boursnell (cmb211@cam.ac.uk)
@@ -49,10 +52,13 @@ opts = Trollop::options do
   opt :trimmer, "Which trimming program to use (none|trimmomatic|skewer)",
       :default => "trimmomatic",
       :type => String
-  opt :correction, "Which read error correction program to use (none|hammer)",
+  opt :filter, "Fasta file of genes to filter out",
       :default => "none",
       :type => String
-  opt :normalise, "Which digital normalisation program to run (none|khmer|bbnorm)",
+  opt :correction, "Which read error correction program to use (none|hammer|rcorrector)",
+      :default => "none",
+      :type => String
+  opt :normalise, "Which digital normalisation program to use (none|khmer|bbnorm)",
       :default => "none",
       :type => String
   opt :aligner, "Which aligner to use (none|bowtie2|bwa|bbmap|snap)",
@@ -187,6 +193,16 @@ else
   end
 end
 
+if opts.continue and preprocessor.data[0][:processed][:filtered]
+  puts "already completed #{preprocessor.data[0][:processed][:filtered]}"
+else
+  if opts.filter == "none"
+    # do nothing
+  else
+    preprocessor.filter(opts.filter)
+  end
+end
+
 if opts.continue and preprocessor.data[0][:processed][:correction]
   puts "already completed #{preprocessor.data[0][:processed][:correction]}"
 else
@@ -195,6 +211,8 @@ else
     preprocessor.hammer
   elsif opts.correction == "hammer_batch"
     preprocessor.hammer_batch
+  elsif opts.correction == "rcorrector"
+    preprocessor.rcorrector
   else
     raise RuntimeError.new("#{opts.correction} is not a valid input to correction")
   end
@@ -248,6 +266,10 @@ set = Set.new
 preprocessor.data.each do |hash|
   if opts.aligner != "none"
     set << hash[:sam]
+  elsif opts.normalise != "none"
+    set << hash[:current]
+  elsif opts.correction != "none"
+    set << hash[:current]
   else
     set << hash[:current]
     set << hash[:unpaired] if hash[:unpaired].length > 0 if hash[:unpaired]

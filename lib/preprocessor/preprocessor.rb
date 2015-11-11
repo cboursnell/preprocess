@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-## # # # # # # # # # # # # #
+## # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 ## mrna pipeline
 ##
 ## can run any of these
@@ -19,7 +19,7 @@
 ## created: 2014-05-27 Chris Boursnell (cmb211@cam.ac.uk)
 ## last updated: 2015-02-03
 ##
-## # # # # # # # # # # # # #
+## # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 require 'rubygems'
 require 'set'
@@ -194,12 +194,13 @@ module Preprocessor
           end
         end
       end
-      @data.each do |file|
-        trimmer.stats file
-      end
-      File.open(File.join(@output_dir, "trimmomatic.stats"), "wb") do |out|
-        out.write trimmer.get_stats
-      end
+      # don't get stats... takes too long
+      # @data.each do |file|
+      #   trimmer.stats file
+      # end
+      # File.open(File.join(@output_dir, "trimmomatic.stats"), "wb") do |out|
+      #   out.write trimmer.get_stats
+      # end
     end
 
     def skewer(end_quality=25, mean_quality=0, min_length=40)
@@ -256,6 +257,31 @@ module Preprocessor
           out.write correcter.get_stats
         end
       end
+    end
+
+    def rcorrector
+      correcter = Rcorrector.new(@output_dir, @threads, @memory)
+      if @paired==1
+        @data.each_with_index do |left,i|
+          left_files << left
+        end
+        correcter.run_single left_files
+      elsif @paired==2
+        left_files = []
+        right_files = []
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          left[:processed][:correction] = "rcorrector"
+          right[:processed][:correction] = "rcorrector"
+          left_files << left
+          right_files << right
+        end
+        print "Correcting with Rcorrector..." if @verbose
+        correcter.run left_files, right_files
+        puts " Done" if @verbose
+        # TODO set output files into @data
+      end
+      pp @data
+
     end
 
     def khmer(kmer=23, cutoff=20, tables=4)
@@ -344,7 +370,6 @@ module Preprocessor
       end
     end
 
-
     def bowtie2(reference, expression=false)
       aligner = Bowtie2.new(@output_dir, @threads, reference, expression)
       if @paired==1
@@ -366,6 +391,27 @@ module Preprocessor
       end
       File.open(File.join(@output_dir, "bowtie2.stats"), "wb") do |out|
         out.write aligner.get_stats
+      end
+    end
+
+    def filter(fasta)
+      filter = Filter.new(@output_dir, @threads, fasta)
+      if @paired==1
+        @data.each_with_index do |left, i|
+          puts "Filtering #{left[:type]}-#{left[:rep]}..." if @verbose
+          filter.run(left)
+          left[:processed][:align] = "filter"
+        end
+      elsif @paired==2
+        @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+          puts "Filtering #{left[:type]}-#{left[:rep]}..." if @verbose
+          filter.run(left, right)
+          left[:processed][:align] = "filter"
+          right[:processed][:align] = "filter"
+          File.open("#{@output_dir}/log", "wb") do |f|
+            f.write(JSON.pretty_generate(@data))
+          end
+        end
       end
     end
 

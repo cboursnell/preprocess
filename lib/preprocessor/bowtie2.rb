@@ -12,6 +12,7 @@ module Preprocessor
       @threads = threads
       @reference = File.expand_path(reference)
       @expression = expression
+      @export_bam =true
 
       gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
       gem_deps = File.join(gem_dir, 'deps', 'bowtie2.yaml')
@@ -47,7 +48,12 @@ module Preprocessor
       r = File.basename(right[:current]) if right
       sam = "#{l.split(".")[0..-2].join(".")}-"
       sam << "#{r.split(".")[0..-2].join(".")}-" if right
-      sam << "#{File.basename(index)}.sam"
+      if @export_bam
+        sam << "#{File.basename(index)}.bam"
+      else
+        sam << "#{File.basename(index)}.sam"
+      end
+
       sam = File.join(@outdir, sam)
       cmd = "#{@bowtie}"
       cmd << " -x #{index}"
@@ -64,7 +70,12 @@ module Preprocessor
         cmd << " -a -X 600 --rdg 6,5 --rfg 6,5 --score-min L,-.6,-.4"
         cmd << " --no-discordant --no-mixed "
       end
-      cmd << " -S #{sam}"
+      if @export_bam
+        cmd << " | samtools view -bS -o #{sam} -"
+      else
+        cmd << " -S #{sam}"
+      end
+
       align = Cmd.new(cmd)
       align.run sam
       hash = {}

@@ -41,9 +41,9 @@ module Preprocessor
     end
 
     def install
+      url = "http://downloads.sourceforge.net/project/bbmap/BBMap_35.43.tar.gz"
       dl = "#{@gem_dir}/bin/bbmap.tar.gz"
-      cmd = "wget http://heanet.dl.sourceforge.net/project/bbmap/"
-      cmd << "BBMap_34.72.tar.gz -O #{dl}"
+      cmd = "wget #{url} -O #{dl}"
       wget = Cmd.new(cmd)
       wget.run
       if wget.status.success?

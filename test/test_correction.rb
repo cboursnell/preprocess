@@ -21,26 +21,26 @@ class TestCorrection < Test::Unit::TestCase
       # delete output folder
       cmd = "rm -rf #{@output}"
       `#{cmd}`
-      gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
-      bindir = File.join(gem_dir, "bin")
-      cmd = "rm #{bindir}/trimmomatic-0.32.jar"
-      `#{cmd}` if File.exist?(File.join(bindir, "trimmomatic-0.32.jar"))
-      cmd = "rm -rf #{bindir}/SPAdes-3.5.0-Linux"
-      `#{cmd}` if Dir.exist?(File.join(bindir, "SPAdes-3.5.0-Linux"))
-      cmd = "rm #{bindir}/spades.tar.gz"
-      `#{cmd}` if File.exist?(File.join(bindir, "spades.tar.gz"))
+      # gem_dir = Gem.loaded_specs['preprocessor'].full_gem_path
+      # bindir = File.join(gem_dir, "bin")
+      # cmd = "rm #{bindir}/trimmomatic-0.32.jar"
+      # `#{cmd}` if File.exist?(File.join(bindir, "trimmomatic-0.32.jar"))
+      # cmd = "rm -rf #{bindir}/SPAdes-3.5.0-Linux"
+      # `#{cmd}` if Dir.exist?(File.join(bindir, "SPAdes-3.5.0-Linux"))
+      # cmd = "rm #{bindir}/spades.tar.gz"
+      # `#{cmd}` if File.exist?(File.join(bindir, "spades.tar.gz"))
     end
 
-    should 'hammer reads in a batch' do
-      puts @output
-      @pre.hammer_batch
-      list = @pre.data
-      pp list
-      assert_equal({:correction=>"bayeshammer"}, list[0][:processed])
-      assert File.exist?(list[1][:current]), "file exists"
-      assert list[2][:prehammer]
-      assert File.exist?(list[3][:current]), "file exists"
-    end
+    # should 'hammer reads in a batch' do
+    #   puts @output
+    #   @pre.hammer_batch
+    #   list = @pre.data
+    #   pp list
+    #   assert_equal({:correction=>"bayeshammer"}, list[0][:processed])
+    #   assert File.exist?(list[1][:current]), "file exists"
+    #   assert list[2][:prehammer]
+    #   assert File.exist?(list[3][:current]), "file exists"
+    # end
 
     should 'hammer reads' do
       puts @output
@@ -72,6 +72,28 @@ class TestCorrection < Test::Unit::TestCase
         assert File.exist?(f), "file #{f} not found"
       end
     end
+
+    should 'run rcorrector on paired reads' do
+      @pre.rcorrector
+      files = []
+      files << "#{@output}/A-1-1.cor.fq"
+      files << "#{@output}/A-1-2.cor.fq"
+      files << "#{@output}/A-2-1.cor.fq"
+      files << "#{@output}/A-2-2.cor.fq"
+      files.each do |f|
+        assert File.exist?(f), "file #{f} not found"
+      end
+    end
+
+    # should 'run rcorrector on single reads' do
+    #   puts @output
+    #   @pre.rcorrector
+    #   Dir.chdir(@output) do
+    #     Dir["*"].each do |file|
+    #       puts file
+    #     end
+    #   end
+    # end
 
   end
 end
