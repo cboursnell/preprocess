@@ -46,6 +46,8 @@ module Preprocessor
         index_cmd = "#{@salmon} index"
         index_cmd << " --index #{index}" # create index
         index_cmd << " --transcripts #{@reference}"
+        index_cmd << " --type quasi"
+        index_cmd << " --kmerLen 31"
         index_cmd << " --threads #{@threads}"
         make_index = Cmd.new(index_cmd)
         if !File.exist?(File.join(index, "bwaidx.bwt"))
@@ -61,6 +63,7 @@ module Preprocessor
           cmd << " --libType U"
           cmd << " -r #{left[:current]}"
         end
+        cmd << " --biasCorrect"
         cmd << " --index #{index}"
         cmd << " --output #{salmon_out}"
         salmon = Cmd.new(cmd)

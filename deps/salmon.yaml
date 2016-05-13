@@ -2,9 +2,9 @@ salmon:
   binaries:
     - salmon
   version:
-    number: 'Salmon v0.4.2'
+    number: 'Salmon v0.5.0'
     command: 'salmon --help'
   url:
     64bit:
-      linux: https://github.com/COMBINE-lab/salmon/releases/download/v0.4.2/SalmonBeta-0.4.2_DebianSqueeze.tar.gz
-      macosx: https://github.com/COMBINE-lab/salmon/releases/download/v0.4.2/SalmonBeta-0.4.2_OSX-10.10.tar.gz
+      linux: https://github.com/COMBINE-lab/salmon/releases/download/v0.5.0/SalmonBeta-0.5.0_DebianSqueeze.tar.gz
+      macosx: https://github.com/COMBINE-lab/salmon/releases/download/v0.5.0/SalmonBeta-0.5.0_OSX_10.11.tar.gz

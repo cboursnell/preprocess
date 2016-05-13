@@ -78,12 +78,13 @@ opts = Trollop::options do
   opt :cutoff, "The coverage cutoff to use for digital normalisation",
       :default => 20,
       :type => :int
+  opt :batch, "Concatenate files before running normalisation"
   opt :tables, "The number of hash tables to use for digital normalisation",
       :default => 3,
       :type => :int
   opt :continue, "Try to continue pipeline",
       :default => false
-  opt :verbose, "Be verbose"
+  opt :verbose, "Be verbose", :default => true
   opt :morehelp, "Get help on how to format the input file"
 end
 
@@ -109,6 +110,7 @@ end
 
 if opts.left and !opts.continue
   opts.left.split(",").each do |file|
+    file = File.expand_path(file)
     Trollop::die "#{file} must exist" if !File.exist?(file)
   end
 else
@@ -117,10 +119,11 @@ else
 end
 if opts.right and !opts.continue
   opts.right.split(",").each do |file|
+    file = File.expand_path(file)
     Trollop::die "#{file} must exist" if !File.exist?(file)
   end
 elsif opts.continue
-  ## TODO need to add something to handle single files herer
+  ## TODO need to add something to handle single files here
 end
 
 if opts.continue and !Dir.exist?(opts.output)
@@ -159,7 +162,7 @@ if opts.correction == "hammer" and opts.memory <= 4
 end
 
 preprocessor = Preprocessor::Preprocessor.new(opts.output, opts.verbose,
-                                                 opts.threads, opts.memory)
+                                              opts.threads, opts.memory)
 
 if opts.continue
   # load log from output directory
@@ -218,6 +221,10 @@ else
   end
 end
 
+if opts.batch
+  preprocessor.batch
+end
+
 if opts.continue and preprocessor.data[0][:processed][:normalise]
   puts "already completed #{preprocessor.data[0][:processed][:normalise]}"
 else
@@ -250,6 +257,8 @@ end
 
 if opts.continue and preprocessor.data[0][:processed][:expression]
   puts "already completed #{preprocessor.data[0][:processed][:expression]}"
+elsif opts.normalise != "none"
+  puts "don't do normalisation before expression quantification"
 else
   if opts.expression == "none"
   elsif opts.expression == "express"

@@ -4,9 +4,9 @@ bbmap:
     - bbnorm.sh
     - calcmem.sh
   version:
-    number: 'BBMap v34.x'
+    number: 'BBMap v35.x'
     command: 'bbmap.sh'
   url:
     64bit:
-      linux: http://heanet.dl.sourceforge.net/project/bbmap/BBMap_34.72.tar.gz
+      linux: http://heanet.dl.sourceforge.net/project/bbmap/BBMap_35.74.tar.gz
   unpack: true

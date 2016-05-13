@@ -168,8 +168,8 @@ module Preprocessor
       @output_dir = File.expand_path(output_dir)
     end
 
-    def trimmomatic(minlen=40, windowsize=4, quality=15,
-                    trailing=15, leading=15, mismatches=2, avgqual=30)
+    def trimmomatic(minlen=40, windowsize=4, quality=5,
+                    trailing=15, leading=15, mismatches=2, avgqual=15)
       trimmer = Trimmomatic.new(@output_dir, @threads, minlen, windowsize,
                                 quality, trailing, leading, mismatches, avgqual)
 
@@ -280,8 +280,6 @@ module Preprocessor
         puts " Done" if @verbose
         # TODO set output files into @data
       end
-      pp @data
-
     end
 
     def khmer(kmer=23, cutoff=20, tables=4)
@@ -300,22 +298,7 @@ module Preprocessor
       end
     end
 
-    def bbnorm(k=31, target_coverage=20, bits=16, tables=3,
-               lowthresh=1, mindepth=1, minkmers=15)
-      normaliser = BBnorm.new(@output_dir, @threads, @memory,
-              k, target_coverage, bits, tables, lowthresh, mindepth, minkmers)
-      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
-        normaliser.run(left, right)
-        left[:processed][:normalise] = "bbnorm"
-        right[:processed][:normalise] = "bbnorm"
-        File.open("#{@output_dir}/log", "wb") do |f|
-          f.write(JSON.pretty_generate(@data))
-        end
-      end
-    end
-
-    def bbnorm_batch(k=31, target_coverage=20, bits=16, tables=3,
-               lowthresh=1, mindepth=1, minkmers=15)
+    def batch
       cmd1 = "cat "
       cmd2 = "cat "
       @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
@@ -348,25 +331,23 @@ module Preprocessor
           puts "Cat2 failed"
         end
       end
-
-      unless File.exist?(left_output)
-        abort "Couldn't find catted file"
-      end
-      if File.stat(left_output).size < 10
-        abort "Catted file too small"
-      end
       @data[0][:current] = left_output
       @data[1][:current] = right_output
+      @data = [@data[0], @data[1]]
+    end
+
+    def bbnorm(k=31, target_coverage=20, bits=16, tables=3,
+               lowthresh=1, mindepth=1, minkmers=10)
       normaliser = BBnorm.new(@output_dir, @threads, @memory,
               k, target_coverage, bits, tables, lowthresh, mindepth, minkmers)
-      normaliser.run(@data[0], @data[1])
-      # File.delete(left_output)
-      # File.delete(right_output)
-      @data = [@data[0], @data[1]]
-      @data[0][:processed][:normalise] = "bbnorm"
-      @data[1][:processed][:normalise] = "bbnorm"
-      File.open("#{@output_dir}/log", "wb") do |f|
-        f.write(JSON.pretty_generate(@data))
+      @data.each_with_index.each_slice(2) do |(left,i), (right,j)|
+        puts "bbnorm on #{left[:current]}..." if @verbose
+        normaliser.run(left, right)
+        left[:processed][:normalise] = "bbnorm"
+        right[:processed][:normalise] = "bbnorm"
+        File.open("#{@output_dir}/log", "wb") do |f|
+          f.write(JSON.pretty_generate(@data))
+        end
       end
     end
 

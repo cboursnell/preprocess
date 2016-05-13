@@ -47,8 +47,7 @@ module Preprocessor
       wget = Cmd.new(cmd)
       wget.run
       if wget.status.success?
-        cmd = "tar xzf #{dl} --directory "
-        cmd << "#{@gem_dir}/bin"
+        cmd = "tar xzf #{dl} --directory #{@gem_dir}/bin"
         untar = Cmd.new(cmd)
         untar.run
         if !untar.status.success?
